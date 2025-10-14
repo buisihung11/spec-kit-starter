@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Container, CssBaseline } from '@mui/material';
+import { Box, Container } from '@spec-kit-demo-v2/design-system';
 import { Navbar } from './Navbar';
 
 interface LayoutProps {
@@ -9,7 +9,6 @@ interface LayoutProps {
 export const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-      <CssBaseline />
       <Navbar />
       <Container
         component="main"

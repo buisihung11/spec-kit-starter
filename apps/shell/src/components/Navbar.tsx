@@ -8,7 +8,7 @@ import {
   Box,
   Menu,
   MenuItem,
-} from '@mui/material';
+} from '@spec-kit-demo-v2/design-system';
 import MenuIcon from '@mui/icons-material/Menu';
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import { useNavigate } from 'react-router-dom';

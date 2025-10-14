@@ -7,7 +7,7 @@ import {
   CardContent,
   CardActions,
   Button,
-} from '@mui/material';
+} from '@spec-kit-demo-v2/design-system';
 import { useNavigate } from 'react-router-dom';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import DescriptionIcon from '@mui/icons-material/Description';

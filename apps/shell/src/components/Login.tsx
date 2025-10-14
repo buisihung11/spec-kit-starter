@@ -6,8 +6,8 @@ import {
   Button,
   Typography,
   Container,
-  Link,
-} from '@mui/material';
+} from '@spec-kit-demo-v2/design-system';
+import { Link } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 
 export const Login = () => {

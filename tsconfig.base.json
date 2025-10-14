@@ -10,13 +10,24 @@
     "importHelpers": true,
     "target": "es2015",
     "module": "esnext",
-    "lib": ["es2020", "dom"],
+    "lib": [
+      "es2020",
+      "dom"
+    ],
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "newInstructionsUi/Module": ["apps/newInstructionsUi/src/remote-entry.ts"]
+      "newInstructionsUi/Module": [
+        "apps/newInstructionsUi/src/remote-entry.ts"
+      ],
+      "@spec-kit-demo-v2/design-system": [
+        "libs/design-system/src/index.ts"
+      ]
     }
   },
-  "exclude": ["node_modules", "tmp"]
+  "exclude": [
+    "node_modules",
+    "tmp"
+  ]
 }

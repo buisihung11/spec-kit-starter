@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { Route, Routes } from 'react-router-dom';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import { CssBaseline } from '@mui/material';
+import { AppTheme } from '@spec-kit-demo-v2/design-system';
 import { Layout } from '../components/Layout';
 import { Home } from '../components/Home';
 import { Login } from '../components/Login';
@@ -10,21 +9,9 @@ const NewInstructionsUi = React.lazy(
   () => import('newInstructionsUi/Module')
 );
 
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: '#667eea',
-    },
-    secondary: {
-      main: '#764ba2',
-    },
-  },
-});
-
 export function App() {
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
+    <AppTheme defaultMode="light">
       <Layout>
         <React.Suspense fallback={<div>Loading...</div>}>
           <Routes>
@@ -34,7 +21,7 @@ export function App() {
           </Routes>
         </React.Suspense>
       </Layout>
-    </ThemeProvider>
+    </AppTheme>
   );
 }
 

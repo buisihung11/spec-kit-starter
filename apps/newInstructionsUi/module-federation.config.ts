@@ -13,7 +13,8 @@ const config: ModuleFederationConfig = {
       libraryName === 'react-router' ||
       libraryName === 'react-router-dom' ||
       libraryName.startsWith('@mui/') ||
-      libraryName.startsWith('@emotion/')
+      libraryName.startsWith('@emotion/') ||
+      libraryName.startsWith('@spec-kit-demo-v2/design-system')
     ) {
       return {
         ...defaultConfig,

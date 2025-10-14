@@ -6,7 +6,7 @@ import {
   Card,
   CardContent,
   Button,
-} from '@mui/material';
+} from '@spec-kit-demo-v2/design-system';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 
 export function App() {
