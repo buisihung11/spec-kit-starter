@@ -1,0 +1,14 @@
+{
+  "filePath": ".spec-workflow/steering/tech.md",
+  "currentVersion": 1,
+  "snapshots": [
+    {
+      "version": 1,
+      "filename": "snapshot-001.json",
+      "timestamp": "2025-10-14T17:38:26.291Z",
+      "trigger": "initial",
+      "approvalId": "approval_1760463506288_eapjpatex",
+      "approvalTitle": "Technical Steering Document - New Instructions UI"
+    }
+  ]
+}
