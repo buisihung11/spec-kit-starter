@@ -1,0 +1,14 @@
+{
+  "filePath": ".spec-workflow/specs/question-set-list-ui/requirements.md",
+  "currentVersion": 1,
+  "snapshots": [
+    {
+      "version": 1,
+      "filename": "snapshot-001.json",
+      "timestamp": "2025-10-14T17:47:29.574Z",
+      "trigger": "initial",
+      "approvalId": "approval_1760464049572_nq8haf0yu",
+      "approvalTitle": "Requirements Document for Question Set List UI"
+    }
+  ]
+}
