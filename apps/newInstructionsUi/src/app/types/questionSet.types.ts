@@ -35,8 +35,28 @@ export interface FormData {
   version: string;
   /** Ordered array of form sections */
   sections: FormSection[];
+  /** Optional flat array of questions for backward compatibility */
+  questions?: FormField[];
+  /** Optional array of pre-organized steps for multi-step forms */
+  steps?: FormStepData[];
   /** Additional metadata about the form */
   metadata: FormMetadata;
+}
+
+/**
+ * Represents a step in a multi-step form workflow
+ */
+export interface FormStepData {
+  /** Unique identifier for the step */
+  id: string;
+  /** Display title for the step */
+  title: string;
+  /** Optional description of what this step contains */
+  description?: string;
+  /** Order position within the multi-step form (lower numbers appear first) */
+  order?: number;
+  /** Array of questions/fields belonging to this step */
+  questions: FormField[];
 }
 
 /**
@@ -75,6 +95,8 @@ export interface FormField {
   options?: FieldOption[];
   /** Default value for the field */
   defaultValue?: unknown;
+  /** Optional category for grouping or filtering fields */
+  category?: string;
 }
 
 /**
