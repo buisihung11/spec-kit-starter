@@ -6,6 +6,7 @@ import type {
   SubmissionResponse,
   ApiErrorResponse,
 } from '../types/questionSet.types';
+import { mockQuestionSets, mockFormData } from '../mocks/handlers';
 
 /**
  * Interface for the form service client
@@ -18,10 +19,12 @@ export interface FormServiceClient {
 
 /**
  * Service class for handling all HTTP communication with the backend API
+ * Currently using mock data instead of real API calls
  */
 export class FormService implements FormServiceClient {
   private readonly baseUrl: string;
   private readonly timeoutMs = 30000; // 30 seconds
+  private readonly useMockData = true; // Toggle to switch between mock and real API
 
   constructor() {
     // Use environment variable with fallback to '/api'
@@ -70,6 +73,11 @@ export class FormService implements FormServiceClient {
    * Get all available question sets
    */
   async getQuestionSets(): Promise<QuestionSet[]> {
+    // Return mock data directly if useMockData is true
+    if (this.useMockData) {
+      return Promise.resolve(mockQuestionSets);
+    }
+
     const url = `${this.baseUrl}/question-sets`;
 
     const response = await this.fetchWithTimeout(url);
@@ -94,6 +102,18 @@ export class FormService implements FormServiceClient {
    * Get detailed form data by question set ID
    */
   async getFormById(id: string, signal?: AbortSignal): Promise<FormData> {
+    // Return mock data directly if useMockData is true
+    if (this.useMockData) {
+      // Simulate a small delay to mimic network request
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      if (id === '1') {
+        return Promise.resolve(mockFormData);
+      }
+      
+      throw new Error(`Question set with id '${id}' not found`);
+    }
+
     const url = `${this.baseUrl}/question-sets/${encodeURIComponent(id)}`;
 
     const response = await this.fetchWithTimeout(url, {}, signal);
@@ -118,6 +138,17 @@ export class FormService implements FormServiceClient {
    * Submit form data for a specific question set
    */
   async submitFormData(formId: string, data: unknown): Promise<SubmissionResponse> {
+    // Return mock response directly if useMockData is true
+    if (this.useMockData) {
+      // Simulate a small delay to mimic network request
+      await new Promise(resolve => setTimeout(resolve, 200));
+      
+      return Promise.resolve({
+        submissionId: `sub_${Date.now()}`,
+        timestamp: new Date().toISOString(),
+      });
+    }
+
     const url = `${this.baseUrl}/question-sets/${encodeURIComponent(formId)}/submit`;
 
     const response = await this.fetchWithTimeout(url, {

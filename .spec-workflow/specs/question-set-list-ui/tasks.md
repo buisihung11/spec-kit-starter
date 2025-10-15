@@ -209,7 +209,7 @@
   - _Requirements: 1.2_
   - _Prompt: Role: React Frontend Developer | Task: Implement the task for spec question-set-list-ui, first run spec-workflow-guide to get the workflow guide then implement the task: Create FormSection component in apps/newInstructionsUi/src/app/components/FormDisplay/FormSection.tsx accepting props { section: FormSection, control: Control<any>, errors: FieldErrors }. Use Paper component as container with elevation and padding. Display section.title in Typography variant="h6". Display section.description in Typography variant="body2" color="text.secondary" if provided. Use Divider after header. Map section.fields sorted by field.order or array index to FormField components, passing field, control, error from errors[field.id]. Use Stack spacing={3} for field layout. Apply proper spacing using design system. | Restrictions: Presentational component, pass through control and errors to FormField, maintain section order, use design-system components | Success: Component renders section header and description, displays all fields in order, proper spacing and styling, errors passed to fields correctly. Mark this task as in-progress in tasks.md before starting, and mark as complete when done._
 
-- [ ] 21. Create FormSection component tests
+- [x] 21. Create FormSection component tests
   - File: apps/newInstructionsUi/src/app/components/FormDisplay/FormSection.spec.tsx (create new)
   - Write tests for section rendering and field integration
   - Purpose: Verify section layout and field passing
@@ -217,7 +217,7 @@
   - _Requirements: 1.2_
   - _Prompt: Role: QA Engineer | Task: Implement the task for spec question-set-list-ui, first run spec-workflow-guide to get the workflow guide then implement the task: Create unit tests in apps/newInstructionsUi/src/app/components/FormDisplay/FormSection.spec.tsx. Mock FormField component using jest.mock. Test scenarios: renders section title, renders description when provided, renders all fields from section.fields, passes control to each FormField, passes errors to each FormField, fields rendered in correct order. Verify FormField receives correct props. No MSW needed - testing component structure only. | Restrictions: Mock FormField to test section logic in isolation, verify prop passing, check rendering order | Success: Section rendering tested, field integration verified, prop passing validated, tests pass cleanly. Mark this task as in-progress in tasks.md before starting, and mark as complete when done._
 
-- [ ] 22. Create FormDisplay container component with React Hook Form
+- [x] 22. Create FormDisplay container component with React Hook Form
   - File: apps/newInstructionsUi/src/app/components/FormDisplay/FormDisplay.tsx (create new)
   - Implement container component using useForm hook from React Hook Form, rendering form sections, handling submission
   - Purpose: Orchestrate form display, validation, and submission
@@ -225,7 +225,7 @@
   - _Requirements: 1.2, non-functional (validation, error handling, usability)_
   - _Prompt: Role: Senior React Developer with React Hook Form expertise | Task: Implement the task for spec question-set-list-ui, first run spec-workflow-guide to get the workflow guide then implement the task: Create FormDisplay component in apps/newInstructionsUi/src/app/components/FormDisplay/FormDisplay.tsx accepting props { formData: FormData, onSubmit: (data: Record<string, unknown>) => Promise<void>, onCancel: () => void }. Use useForm hook with defaultValues built from formData structure, mode: 'onBlur' for validation timing, resolver for custom validation. Build defaultValues by iterating formData.sections and fields, using field.defaultValue or empty values based on field.type. Render form with Typography variant="h4" for formData.name. Use FormProvider to wrap form. Map formData.sections sorted by section.order to FormSection components. Add Button group at bottom: "Cancel" (variant="outlined", calls onCancel) and "Submit" (variant="contained", type="submit", disabled when isSubmitting). Use handleSubmit from useForm wrapping onSubmit prop. Display submission errors in Alert. Track isDirty to show unsaved changes warning. Use Stack for layout. | Restrictions: Use React Hook Form's useForm hook, proper form validation, handle async submission with loading state, accessible form structure | Success: Form initializes with correct default values, validation works on blur, submission calls onSubmit with form data, cancel works, unsaved changes tracked, accessible and styled. Mark this task as in-progress in tasks.md before starting, and mark as complete when done._
 
-- [ ] 23. Create FormDisplay component tests with MSW
+- [x] 23. Create FormDisplay component tests with MSW
   - File: apps/newInstructionsUi/src/app/components/FormDisplay/FormDisplay.spec.tsx (create new)
   - Write tests for form initialization, validation, submission using MSW
   - Purpose: Verify form orchestration with realistic submission behavior
@@ -233,7 +233,7 @@
   - _Requirements: 1.2, validation requirements_
   - _Prompt: Role: QA Engineer with expertise in form testing, React Hook Form, and MSW | Task: Implement the task for spec question-set-list-ui, first run spec-workflow-guide to get the workflow guide then implement the task: Create unit tests in apps/newInstructionsUi/src/app/components/FormDisplay/FormDisplay.spec.tsx using MSW. Mock FormSection component but use real form submission logic. Import server from '../../mocks/server'. Use @testing-library/user-event for interactions. Test scenarios: initializes with default values from formData, renders all sections, validates required fields on submit (prevents submission), displays validation error messages, submits valid form data and calls onSubmit callback, handles submission errors with error alert display (use server.use to return error), cancel button calls onCancel callback, tracks dirty state when fields change, submit button disabled during submission (MSW can add delay to test). Use waitFor for async validation/submission. | Restrictions: Use MSW for submission mocking to test realistic network behavior, test form orchestration logic not FormSection internals, verify React Hook Form integration, test async submission flow with loading states | Success: Form initialization tested, validation behavior verified, submission flow validated with MSW providing realistic responses, error handling tested, callback invocations confirmed, loading states work correctly. Mark this task as in-progress in tasks.md before starting, and mark as complete when done._
 
-- [ ] 24. Create FormDisplay barrel export
+- [x] 24. Create FormDisplay barrel export
   - File: apps/newInstructionsUi/src/app/components/FormDisplay/index.ts (create new)
   - Export FormDisplay, FormSection, FormField from barrel file
   - Purpose: Clean import paths
@@ -242,7 +242,7 @@
 
 ## Integration and App-Level Changes
 
-- [ ] 25. Update App component to integrate QuestionSetList and FormDisplay
+- [x] 25. Update App component to integrate QuestionSetList and FormDisplay
   - File: apps/newInstructionsUi/src/app/app.tsx (modify existing)
   - Add QuestionSetList component, handle form selection to show FormDisplay, manage navigation between list and form views
   - Purpose: Integrate new components into main application
@@ -250,7 +250,7 @@
   - _Requirements: All requirements (complete user flow)_
   - _Prompt: Role: Senior Full-stack Developer with React architecture expertise | Task: Implement the task for spec question-set-list-ui, first run spec-workflow-guide to get the workflow guide then implement the task: Modify apps/newInstructionsUi/src/app/app.tsx to integrate new functionality. Add state: const [currentView, setCurrentView] = useState<'list' | 'form'>('list'); const [selectedForm, setSelectedForm] = useState<FormData | null>(null);. In JSX, conditionally render: when currentView === 'list' show QuestionSetList with onFormSelected={(formData) => { setSelectedForm(formData); setCurrentView('form'); }} and onError handler; when currentView === 'form' show FormDisplay with formData={selectedForm!}, onSubmit={handleFormSubmit}, onCancel={() => setCurrentView('list')}. Implement handleFormSubmit async function that calls formService.submitFormData, shows success message, returns to list. Use Container and Box from design-system for layout. Remove or update placeholder content. | Restrictions: Maintain existing AppTheme wrapper, clean integration without breaking existing setup, proper error handling, accessible navigation | Success: QuestionSetList displays on load, selecting form navigates to FormDisplay, form submission works, cancel returns to list, smooth user experience, no console errors. Mark this task as in-progress in tasks.md before starting, and mark as complete when done._
 
-- [ ] 26. Create data validation utilities
+- [x] 26. Create data validation utilities
   - File: apps/newInstructionsUi/src/app/utils/validation.ts (create new)
   - Implement validation functions for API response data: validateQuestionSet, validateQuestionSets, validateFormData, validateSubmissionResponse
   - Purpose: Ensure data integrity from API responses
@@ -258,7 +258,7 @@
   - _Requirements: Non-functional (security, reliability)_
   - _Prompt: Role: Backend Developer with expertise in data validation and type safety | Task: Implement the task for spec question-set-list-ui, first run spec-workflow-guide to get the workflow guide then implement the task: Create validation utilities in apps/newInstructionsUi/src/app/utils/validation.ts. Implement validateQuestionSet(data: unknown): QuestionSet function that checks data is object, validates required fields (id as string, name as string, isFunctional as boolean), validates optional fields with correct types, throws Error with descriptive message if validation fails, returns typed QuestionSet. Implement validateQuestionSets(data: unknown): QuestionSet[] that validates array and each item. Implement validateFormData(data: unknown): FormData validating complete form structure including nested sections and fields. Implement validateSubmissionResponse(data: unknown): SubmissionResponse. Export all functions. Use typeof checks and Array.isArray. Include helpful error messages. | Restrictions: Throw descriptive errors (not generic), validate all required fields, check types strictly, export all validators | Success: All validators implemented, proper type checking, descriptive error messages, functions return correctly typed data, handles invalid data gracefully. Mark this task as in-progress in tasks.md before starting, and mark as complete when done._
 
-- [ ] 27. Create validation utility tests
+- [x] 27. Create validation utility tests
   - File: apps/newInstructionsUi/src/app/utils/validation.spec.ts (create new)
   - Write tests for all validation functions with valid and invalid data
   - Purpose: Ensure validation catches all invalid data scenarios
