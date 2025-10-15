@@ -1,0 +1,14 @@
+{
+  "filePath": ".spec-workflow/specs/question-set-list-ui/design.md",
+  "currentVersion": 1,
+  "snapshots": [
+    {
+      "version": 1,
+      "filename": "snapshot-001.json",
+      "timestamp": "2025-10-14T17:54:44.979Z",
+      "trigger": "initial",
+      "approvalId": "approval_1760464484976_a0q91elwc",
+      "approvalTitle": "Design Document for Question Set List UI"
+    }
+  ]
+}

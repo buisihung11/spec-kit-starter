@@ -1,0 +1,22 @@
+{
+  "filePath": ".spec-workflow/specs/question-set-list-ui/tasks.md",
+  "currentVersion": 2,
+  "snapshots": [
+    {
+      "version": 1,
+      "filename": "snapshot-001.json",
+      "timestamp": "2025-10-14T18:05:06.590Z",
+      "trigger": "initial",
+      "approvalId": "approval_1760465106587_17250xlmc",
+      "approvalTitle": "Tasks Document for Question Set List UI"
+    },
+    {
+      "version": 2,
+      "filename": "snapshot-002.json",
+      "timestamp": "2025-10-15T00:03:25.115Z",
+      "trigger": "approved",
+      "approvalId": "approval_1760486540178_3ivrjjhrr",
+      "approvalTitle": "Updated tasks.md to align with MSW-based design.md"
+    }
+  ]
+}
