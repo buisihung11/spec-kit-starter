@@ -21,7 +21,7 @@
 
 ## Service Layer - API Client
 
-- [ ] 3. Create form service API client
+- [x] 3. Create form service API client
   - File: apps/newInstructionsUi/src/app/services/formService.ts (create new)
   - Implement FormService class with fetchWithTimeout, getQuestionSets, getFormById, submitFormData methods
   - Add timeout handling (30 seconds), error parsing, authentication headers
@@ -30,7 +30,7 @@
   - _Requirements: 2.1, 2.2 (data retrieval and submission)_
   - _Prompt: Role: Backend Integration Developer with expertise in HTTP clients and error handling | Task: Implement the task for spec question-set-list-ui, first run spec-workflow-guide to get the workflow guide then implement the task: Create FormService class in apps/newInstructionsUi/src/app/services/formService.ts implementing FormServiceClient interface. Include private fetchWithTimeout method using AbortController for 30-second timeout, credentials: 'include' for auth cookies, Content-Type: application/json headers. Implement getQuestionSets() calling GET /api/question-sets, getFormById(id, signal?) calling GET /api/question-sets/:id with optional AbortSignal, and submitFormData(formId, data) calling POST /api/question-sets/:id/submit. Parse JSON responses, throw descriptive errors for non-OK responses with HTTP status codes. Use environment variable NX_FORM_SERVICE_URL with fallback to '/api'. Export singleton formService instance. | Restrictions: Use native Fetch API only (no axios), handle all HTTP error codes (4xx, 5xx), implement proper timeout with cleanup, include credentials for authentication | Success: All three API methods implemented and working, proper error messages for different HTTP status codes, 30-second timeout enforced, authentication headers included, environment variable configuration works. Mark this task as in-progress in tasks.md before starting, and mark as complete when done._
 
-- [ ] 4. Create MSW mock handlers
+- [x] 4. Create MSW mock handlers
   - File: apps/newInstructionsUi/src/app/mocks/handlers.ts (create new)
   - Create MSW request handlers for all API endpoints with mock data
   - Purpose: Enable API mocking for tests and development
@@ -38,7 +38,7 @@
   - _Requirements: All testing requirements_
   - _Prompt: Role: Test Engineer with expertise in API mocking and MSW | Task: Implement the task for spec question-set-list-ui, first run spec-workflow-guide to get the workflow guide then implement the task: Create MSW handlers in apps/newInstructionsUi/src/app/mocks/handlers.ts. Import http and HttpResponse from 'msw'. Define mockQuestionSets array with 2 items (one functional, one non-functional) and mockFormData object matching the design spec. Create handlers array with: GET /api/question-sets returning HttpResponse.json({ data: mockQuestionSets, total: 2 }), GET /api/question-sets/:id returning mockFormData for id='1' or 404 for others, POST /api/question-sets/:id/submit returning success response with submissionId and timestamp. Export handlers array and errorHandlers object with networkError, timeout, serverError, and invalidData handlers for testing error scenarios. | Restrictions: Use MSW v2.x API (http.get, HttpResponse.json), mock data must match TypeScript interfaces, include both success and error handlers | Success: All handlers implemented correctly, mock data matches interfaces, error handlers available for testing, exports correct. Mark this task as in-progress in tasks.md before starting, and mark as complete when done._
 
-- [ ] 5. Create MSW server setup for Node.js tests
+- [x] 5. Create MSW server setup for Node.js tests
   - File: apps/newInstructionsUi/src/app/mocks/server.ts (create new)
   - Setup MSW server for Jest tests
   - Purpose: Enable MSW in Node.js test environment
@@ -46,7 +46,7 @@
   - _Requirements: All testing requirements_
   - _Prompt: Role: Test Engineer | Task: Implement the task for spec question-set-list-ui, first run spec-workflow-guide to get the workflow guide then implement the task: Create MSW server setup in apps/newInstructionsUi/src/app/mocks/server.ts. Import setupServer from 'msw/node' and handlers from './handlers'. Export const server = setupServer(...handlers). This provides the MSW server instance for Jest tests. | Restrictions: Use msw/node (not msw/browser), import handlers from local file, export server instance | Success: Server exported correctly, can be used in jest.setup.ts. Mark this task as in-progress in tasks.md before starting, and mark as complete when done._
 
-- [ ] 6. Create MSW browser worker for development
+- [x] 6. Create MSW browser worker for development
   - File: apps/newInstructionsUi/src/app/mocks/browser.ts (create new)
   - Setup MSW worker for browser development
   - Purpose: Enable MSW in browser for development without real backend
@@ -54,7 +54,7 @@
   - _Requirements: Development workflow efficiency_
   - _Prompt: Role: Frontend Developer | Task: Implement the task for spec question-set-list-ui, first run spec-workflow-guide to get the workflow guide then implement the task: Create MSW browser worker in apps/newInstructionsUi/src/app/mocks/browser.ts. Import setupWorker from 'msw/browser' and handlers from './handlers'. Export const worker = setupWorker(...handlers). This provides the MSW service worker for browser development. | Restrictions: Use msw/browser (not msw/node), import handlers from local file, export worker instance | Success: Worker exported correctly, can be used in main.ts for development mode. Mark this task as in-progress in tasks.md before starting, and mark as complete when done._
 
-- [ ] 7. Configure MSW in Jest setup
+- [x] 7. Configure MSW in Jest setup
   - File: apps/newInstructionsUi/jest.setup.ts (modify existing)
   - Add MSW server lifecycle hooks to Jest setup
   - Purpose: Start/stop MSW server for all tests
@@ -62,7 +62,7 @@
   - _Requirements: All testing requirements_
   - _Prompt: Role: Test Engineer | Task: Implement the task for spec question-set-list-ui, first run spec-workflow-guide to get the workflow guide then implement the task: Update apps/newInstructionsUi/jest.setup.ts to configure MSW. Import server from './src/app/mocks/server'. Add beforeAll(() => server.listen({ onUnhandledRequest: 'error' })) to start MSW before tests. Add afterEach(() => server.resetHandlers()) to reset handlers after each test. Add afterAll(() => server.close()) to cleanup after all tests. These ensure MSW intercepts all API calls during testing. | Restrictions: Add to existing jest.setup.ts (don't overwrite other config), use correct MSW lifecycle methods, set onUnhandledRequest to 'error' to catch unmocked requests | Success: MSW starts before tests, resets between tests, closes after tests, unmocked requests throw errors. Mark this task as in-progress in tasks.md before starting, and mark as complete when done._
 
-- [ ] 8. Create form service unit tests with MSW
+- [x] 8. Create form service unit tests with MSW
   - File: apps/newInstructionsUi/src/app/services/formService.spec.ts (create new)
   - Write tests for all formService methods using MSW for mocking
   - Purpose: Ensure API client reliability with realistic network mocking
@@ -72,7 +72,7 @@
 
 ## Custom Hooks - Data Fetching
 
-- [ ] 9. Create useQuestionSets hook
+- [x] 9. Create useQuestionSets hook
   - File: apps/newInstructionsUi/src/app/hooks/useQuestionSets.ts (create new)
   - Implement custom hook that fetches question sets on mount, manages loading/error/data state, provides refetch function
   - Purpose: Encapsulate question set list fetching logic
@@ -80,7 +80,7 @@
   - _Requirements: 1.1 (Display Available Question Sets)_
   - _Prompt: Role: React Developer specializing in custom hooks and state management | Task: Implement the task for spec question-set-list-ui, first run spec-workflow-guide to get the workflow guide then implement the task: Create useQuestionSets custom hook in apps/newInstructionsUi/src/app/hooks/useQuestionSets.ts that returns { questionSets: QuestionSet[], loading: boolean, error: Error | null, refetch: () => Promise<void> }. Use useState for state management with initial state { questionSets: [], loading: true, error: null }. Create fetchQuestionSets function using useCallback that calls formService.getQuestionSets(), sets loading=true before fetch, updates state with data on success, sets error on failure. Call fetchQuestionSets in useEffect on mount. Return state and refetch function. | Restrictions: Use functional component patterns only, proper dependency arrays in useEffect/useCallback, handle both success and error cases, ensure loading state is accurate | Success: Hook fetches question sets on mount, loading state transitions correctly, error state captured on failure, refetch function triggers new fetch, no memory leaks or unnecessary re-renders. Mark this task as in-progress in tasks.md before starting, and mark as complete when done._
 
-- [ ] 10. Create useQuestionSets hook tests with MSW
+- [x] 10. Create useQuestionSets hook tests with MSW
   - File: apps/newInstructionsUi/src/app/hooks/useQuestionSets.spec.ts (create new)
   - Write tests for hook behavior using MSW for API mocking
   - Purpose: Verify hook state management with realistic API responses
@@ -88,7 +88,7 @@
   - _Requirements: 1.1_
   - _Prompt: Role: QA Engineer with expertise in React hook testing and MSW | Task: Implement the task for spec question-set-list-ui, first run spec-workflow-guide to get the workflow guide then implement the task: Create unit tests in apps/newInstructionsUi/src/app/hooks/useQuestionSets.spec.ts for useQuestionSets hook using MSW. Import renderHook from @testing-library/react, server from '../mocks/server', and http/HttpResponse from 'msw'. Test scenarios: initial state has loading=true, questionSets=[], error=null; successful fetch sets questionSets data and loading=false (MSW returns mock data); failed fetch sets error and loading=false (use server.use to return error); refetch function calls API again (MSW handles request); multiple refetch calls work correctly. Use waitFor for async state updates. No need to mock formService - MSW intercepts the real API calls. | Restrictions: Use MSW for all API mocking (not jest.spyOn), test state transitions, verify async behavior with waitFor, ensure proper cleanup, use server.use() to override handlers for error tests | Success: All hook behaviors tested with MSW, state transitions verified with realistic responses, refetch function tested, error handling validated with MSW error responses, tests run cleanly without warnings. Mark this task as in-progress in tasks.md before starting, and mark as complete when done._
 
-- [ ] 11. Create useFormService hook
+- [x] 11. Create useFormService hook
   - File: apps/newInstructionsUi/src/app/hooks/useFormService.ts (create new)
   - Implement custom hook that fetches individual form data on demand, manages loading/error/formData state, handles AbortController for race condition prevention
   - Purpose: Encapsulate form retrieval logic with cancellation support
@@ -96,7 +96,7 @@
   - _Requirements: 1.2 (Retrieve Question Set)_
   - _Prompt: Role: React Developer with expertise in async operations and cancellation | Task: Implement the task for spec question-set-list-ui, first run spec-workflow-guide to get the workflow guide then implement the task: Create useFormService custom hook in apps/newInstructionsUi/src/app/hooks/useFormService.ts that returns { formData: FormData | null, loading: boolean, error: Error | null, fetchForm: (questionSetId: string) => Promise<void>, reset: () => void }. Use useState for state with initial { formData: null, loading: false, error: null }. Create useRef for AbortController to track current request. In fetchForm: abort previous request if exists, create new AbortController, set loading=true, call formService.getFormById with abort signal, update state on success, handle AbortError separately (don't set error state), set error for other failures. Implement reset function to clear state and abort ongoing request. | Restrictions: Prevent race conditions using AbortController, don't set error state for AbortError, ensure proper cleanup, handle edge cases | Success: Hook fetches form on demand (not automatically), cancels previous requests correctly, loading/error states accurate, reset function works, no race conditions occur. Mark this task as in-progress in tasks.md before starting, and mark as complete when done._
 
-- [ ] 12. Create useFormService hook tests with MSW
+- [x] 12. Create useFormService hook tests with MSW
   - File: apps/newInstructionsUi/src/app/hooks/useFormService.spec.ts (create new)
   - Write tests for hook behavior using MSW, verify AbortController usage
   - Purpose: Verify form fetching logic with realistic network behavior
@@ -106,7 +106,7 @@
 
 ## Service Layer - Step Organization
 
-- [ ] 13. Create stepOrganizer service
+- [x] 13. Create stepOrganizer service
   - File: apps/newInstructionsUi/src/app/services/stepOrganizer.ts (create new)
   - Implement StepOrganizer class that analyzes form data and organizes questions into logical steps
   - Purpose: Convert form data into multi-step structure with appropriate grouping
@@ -114,7 +114,7 @@
   - _Requirements: 2.2 (Multi-step form organization)_
   - _Prompt: Role: Frontend Architect specializing in data transformation and UX patterns | Task: Implement the task for spec question-set-list-ui, first run spec-workflow-guide to get the workflow guide then implement the task: Create StepOrganizer class in apps/newInstructionsUi/src/app/services/stepOrganizer.ts implementing StepOrganizerService interface with organizeIntoSteps(formData: FormData): FormStepData[] method. Strategy 1: If formData.steps exists and has length > 0, map to FormStepData format with id, title, description, questions. Strategy 2: If formData.sections exists and has length > 0, convert each section to a step. Strategy 3: Default grouping - use private groupByDefault(questions: FormField[]) method that groups questions into steps of 6 questions each (DEFAULT_QUESTIONS_PER_STEP = 6), generating step titles like "Step 1 of N". Use constants MIN_QUESTIONS_PER_STEP = 3, MAX_QUESTIONS_PER_STEP = 8 for configuration. Export singleton stepOrganizer instance. | Restrictions: Must handle all three strategies, default grouping should be sensible (not too many/few questions per step), generate clear step titles, pure function with no side effects | Success: All three organization strategies implemented, default grouping creates reasonable step sizes, proper TypeScript types, handles edge cases (empty questions, single question), exports singleton. Mark this task as in-progress in tasks.md before starting, and mark as complete when done._
 
-- [ ] 14. Create stepOrganizer service tests
+- [x] 14. Create stepOrganizer service tests
   - File: apps/newInstructionsUi/src/app/services/stepOrganizer.spec.ts (create new)
   - Write tests for all organization strategies and edge cases
   - Purpose: Verify step organization logic reliability
@@ -124,7 +124,7 @@
 
 ## Custom Hooks - Multi-Step Form Management
 
-- [ ] 15. Create useMultiStepForm hook
+- [x] 15. Create useMultiStepForm hook
   - File: apps/newInstructionsUi/src/app/hooks/useMultiStepForm.ts (create new)
   - Implement custom hook for managing multi-step form state, navigation, and data aggregation
   - Purpose: Centralize multi-step form state management and navigation logic
@@ -132,7 +132,7 @@
   - _Requirements: 2.2, 2.3 (Multi-step form display and navigation)_
   - _Prompt: Role: Senior React Developer with expertise in complex state management and custom hooks | Task: Implement the task for spec question-set-list-ui, first run spec-workflow-guide to get the workflow guide then implement the task: Create useMultiStepForm hook in apps/newInstructionsUi/src/app/hooks/useMultiStepForm.ts that accepts formData: FormData parameter and returns { currentStep: number, totalSteps: number, steps: FormStepData[], formDataByStep: Record<number, Record<string, unknown>>, completedSteps: number[], goToNext: (stepData) => void, goToPrevious: (stepData?) => void, goToStep: (stepIndex) => void, isFirstStep: boolean, isLastStep: boolean, saveStepData: (stepIndex, data) => void, getAllFormData: () => Record<string, unknown> }. Use useMemo to organize steps with stepOrganizer.organizeIntoSteps(formData). Use useState for currentStep (initial 0), formDataByStep (initial {}), completedSteps (initial []). Implement goToNext that saves current step data, adds to completedSteps if not present, increments currentStep (max: steps.length-1). Implement goToPrevious that optionally saves current step data, decrements currentStep (min: 0). Implement goToStep for direct navigation. Implement getAllFormData that merges all step data objects. Use useCallback for all navigation functions. | Restrictions: Proper dependency arrays in hooks, prevent index out of bounds, immutable state updates, memoize expensive operations | Success: Hook manages multi-step state correctly, navigation functions work, step data persists across navigation, completedSteps tracking works, data aggregation merges all steps, no unnecessary re-renders. Mark this task as in-progress in tasks.md before starting, and mark as complete when done._
 
-- [ ] 16. Create useMultiStepForm hook tests
+- [x] 16. Create useMultiStepForm hook tests
   - File: apps/newInstructionsUi/src/app/hooks/useMultiStepForm.spec.ts (create new)
   - Write tests for hook navigation, state management, and data aggregation
   - Purpose: Verify multi-step form state management reliability
@@ -142,7 +142,7 @@
 
 ## Presentation Components
 
-- [ ] 17. Create QuestionSetItem component
+- [x] 17. Create QuestionSetItem component
   - File: apps/newInstructionsUi/src/app/components/QuestionSetList/QuestionSetItem.tsx (create new)
   - Implement presentational component rendering individual question set with name, functional status badge, loading indicator, hover states
   - Purpose: Display single question set item with visual feedback
@@ -150,7 +150,7 @@
   - _Requirements: 1.1, 3 (Display and Visual Feedback)_
   - _Prompt: Role: React Frontend Developer specializing in Material UI and component design | Task: Implement the task for spec question-set-list-ui, first run spec-workflow-guide to get the workflow guide then implement the task: Create QuestionSetItem component in apps/newInstructionsUi/src/app/components/QuestionSetList/QuestionSetItem.tsx accepting props { questionSet: QuestionSet, isSelected: boolean, isLoading: boolean, onSelect: (id: string) => void, disabled: boolean }. Use Card component as container, ListItemButton for interaction. Display questionSet.name in Typography variant="h6". Show Chip with label="Functional" color="success" when isFunctional=true, label="Not Available" color="default" when false. Show CircularProgress size={20} when isLoading=true. Apply hover effect with sx={{ '&:hover': { bgcolor: 'action.hover' } }}. Disable button when disabled=true or isFunctional=false. Call onSelect(questionSet.id) on click. Use spacing and styling from design system. | Restrictions: Pure presentational component (no business logic or data fetching), use design-system components only, proper TypeScript props interface, accessible (ARIA labels for icons), disabled state properly handled | Success: Component renders correctly with all visual states (normal, hover, selected, loading, disabled), functional status badge displays accurately, onClick handler works, proper Material UI styling applied, accessible. Mark this task as in-progress in tasks.md before starting, and mark as complete when done._
 
-- [ ] 18. Create QuestionSetItem component tests
+- [x] 18. Create QuestionSetItem component tests
   - File: apps/newInstructionsUi/src/app/components/QuestionSetList/QuestionSetItem.spec.tsx (create new)
   - Write tests for all component states and interactions
   - Purpose: Ensure component renders correctly in all states
@@ -158,7 +158,7 @@
   - _Requirements: 1.1, 3_
   - _Prompt: Role: QA Engineer with expertise in React component testing | Task: Implement the task for spec question-set-list-ui, first run spec-workflow-guide to get the workflow guide then implement the task: Create unit tests in apps/newInstructionsUi/src/app/components/QuestionSetList/QuestionSetItem.spec.tsx. Test scenarios: renders question set name correctly, displays "Functional" badge when isFunctional=true, displays "Not Available" badge when isFunctional=false, shows loading indicator when isLoading=true, calls onSelect with correct ID when clicked, button is disabled when disabled=true, button is disabled when isFunctional=false, shows selected visual state when isSelected=true. Use fireEvent.click for interactions, getByText/getByRole for queries. No MSW needed - this is a presentational component. | Restrictions: Test component in isolation (no external dependencies to mock), verify all prop combinations, check accessibility, ensure no console errors | Success: All component states and behaviors tested, interaction handlers verified, visual states validated, tests pass cleanly. Mark this task as in-progress in tasks.md before starting, and mark as complete when done._
 
-- [ ] 19. Create QuestionSetList barrel export
+- [x] 19. Create QuestionSetList barrel export
   - File: apps/newInstructionsUi/src/app/components/QuestionSetList/index.ts (create new)
   - Export QuestionSetItem and QuestionSetList (to be created) from barrel file
   - Purpose: Clean import paths for consumers
@@ -167,7 +167,7 @@
 
 ## Container Components
 
-- [ ] 20. Create QuestionSetList container component
+- [x] 20. Create QuestionSetList container component
   - File: apps/newInstructionsUi/src/app/components/QuestionSetList/QuestionSetList.tsx (create new)
   - Implement container component that uses useQuestionSets and useFormService hooks, renders list of QuestionSetItem components, handles loading/error/empty states
   - Purpose: Orchestrate question set list display and form retrieval
@@ -175,7 +175,7 @@
   - _Requirements: 1.1, 1.2, 1.3 (All question set list requirements)_
   - _Prompt: Role: Senior React Developer with expertise in container components and state orchestration | Task: Implement the task for spec question-set-list-ui, first run spec-workflow-guide to get the workflow guide then implement the task: Create QuestionSetList container component in apps/newInstructionsUi/src/app/components/QuestionSetList/QuestionSetList.tsx accepting props { onFormSelected?: (formData: FormData) => void, onError?: (error: Error) => void }. Use useQuestionSets hook for list data and useFormService hook for form fetching. Maintain selectedId state with useState. Render loading state: CircularProgress with "Loading question sets..." Typography. Render error state: Alert severity="error" with error message and "Retry" Button calling refetch(). Render empty state: Typography "No question sets available". Render list: map questionSets to QuestionSetItem components, pass isSelected={selectedId === qs.id}, isLoading={formLoading && selectedId === qs.id}, onSelect={handleSelect}, disabled={formLoading}. In handleSelect: set selectedId, call fetchForm(id), on success call onFormSelected callback, on error call onError callback. Use Box for layout, Stack for vertical spacing. | Restrictions: Follow React best practices, proper error boundaries, handle all edge cases, use design-system components, ensure accessible loading/error states | Success: Component displays all states correctly (loading, error, empty, list), selection triggers form fetch, callbacks invoked appropriately, UI responsive and accessible, no memory leaks. Mark this task as in-progress in tasks.md before starting, and mark as complete when done._
 
-- [ ] 17. Create QuestionSetList component tests with MSW
+- [x] 21. Create QuestionSetList component tests with MSW
   - File: apps/newInstructionsUi/src/app/components/QuestionSetList/QuestionSetList.spec.tsx (create new)
   - Write tests for all component states and user flows using MSW
   - Purpose: Ensure container component orchestration works correctly with realistic API responses
@@ -185,7 +185,7 @@
 
 ## Form Display Components (React Hook Form Integration)
 
-- [ ] 18. Create FormField component with React Hook Form Controller
+- [x] 22. Create FormField component with React Hook Form Controller
   - File: apps/newInstructionsUi/src/app/components/FormDisplay/FormField.tsx (create new)
   - Implement component that renders appropriate MUI input based on field type using React Hook Form Controller
   - Purpose: Render form fields with validation and React Hook Form integration
@@ -193,7 +193,7 @@
   - _Requirements: 1.2 (form display), non-functional requirements (validation, usability)_
   - _Prompt: Role: React Developer with expertise in React Hook Form and Material UI integration | Task: Implement the task for spec question-set-list-ui, first run spec-workflow-guide to get the workflow guide then implement the task: Create FormField component in apps/newInstructionsUi/src/app/components/FormDisplay/FormField.tsx accepting props { field: FormField, control: Control<any>, error?: FieldError }. Import Controller from react-hook-form. Build validation rules from field.validation and field.required. Use Controller with name={field.id}, control, rules object. In render prop, switch on field.type: 'text'/'email'/'phone' → TextField, 'textarea' → TextField multiline, 'number' → TextField type="number", 'date' → TextField type="date", 'select' → FormControl with Select and MenuItem for options, 'radio' → RadioGroup with Radio buttons, 'checkbox' → Checkbox. Pass onChange, onBlur, value, ref from Controller field prop. Display error?.message in FormHelperText. Apply fullWidth, required indicator, placeholder. Export buildValidationRules helper function. | Restrictions: Use Controller for all inputs (required for React Hook Form), handle all FormFieldType cases, proper error display, accessible labels and error messages | Success: Component renders correct input for each field type, Controller integration works, validation rules applied, errors display correctly, all field types functional. Mark this task as in-progress in tasks.md before starting, and mark as complete when done._
 
-- [ ] 19. Create FormField component tests
+- [x] 23. Create FormField component tests
   - File: apps/newInstructionsUi/src/app/components/FormDisplay/FormField.spec.tsx (create new)
   - Write tests for all field types and validation
   - Purpose: Verify field rendering and React Hook Form integration
@@ -201,7 +201,7 @@
   - _Requirements: 1.2_
   - _Prompt: Role: QA Engineer with React Hook Form testing expertise | Task: Implement the task for spec question-set-list-ui, first run spec-workflow-guide to get the workflow guide then implement the task: Create unit tests in apps/newInstructionsUi/src/app/components/FormDisplay/FormField.spec.tsx. Wrap component in FormProvider from react-hook-form for testing. Test scenarios: text field renders TextField, select field renders Select with options, required field shows required indicator, validation error displays in FormHelperText, onChange updates form value, onBlur triggers validation, disabled state works. Create mock control object or use useForm in test wrapper. Test each FormFieldType variant. No MSW needed - testing component rendering only. | Restrictions: Must use react-hook-form context in tests, test Controller integration, verify validation behavior, ensure all field types covered | Success: All field types tested, Controller integration verified, validation behavior confirmed, error display validated, tests pass reliably. Mark this task as in-progress in tasks.md before starting, and mark as complete when done._
 
-- [ ] 20. Create FormSection component
+- [x] 24. Create FormSection component
   - File: apps/newInstructionsUi/src/app/components/FormDisplay/FormSection.tsx (create new)
   - Implement component that renders form section with title, description, and fields using FormField components
   - Purpose: Group and display related form fields in sections
