@@ -11,13 +11,13 @@
 
 ## Type Definitions
 
-- [x] 2. Create type definitions for question sets and forms
+- [x] 2. Create type definitions for question sets, forms, and multi-step data
   - File: apps/newInstructionsUi/src/app/types/questionSet.types.ts (create new)
-  - Define TypeScript interfaces for QuestionSet, FormData, FormSection, FormField, ValidationRule, FieldOption, FormMetadata, API responses
-  - Purpose: Establish type safety for all data structures
+  - Define TypeScript interfaces for QuestionSet, FormData, FormStepData, FormSection, FormField, ValidationRule, FieldOption, FormMetadata, API responses
+  - Purpose: Establish type safety for all data structures including multi-step form support
   - _Leverage: TypeScript 5.9.2, existing type patterns in the codebase_
   - _Requirements: 1.1 (implied from design)_
-  - _Prompt: Role: TypeScript Developer specializing in type systems and domain modeling | Task: Implement the task for spec question-set-list-ui, first run spec-workflow-guide to get the workflow guide then implement the task: Create comprehensive TypeScript interfaces in apps/newInstructionsUi/src/app/types/questionSet.types.ts for all data structures including QuestionSet (id, name, description, isFunctional, category, lastUpdated, version), FormData (id, name, version, sections, metadata), FormSection (id, title, description, order, fields), FormField (id, type, label, required, placeholder, validation, options, defaultValue), FormFieldType union, ValidationRule, FieldOption, FormMetadata, QuestionSetsResponse, FormDetailResponse, SubmissionResponse, and ApiErrorResponse. Include comprehensive JSDoc comments for each interface. | Restrictions: Use exact field names from design document, make optional fields explicit with ?, use union types for FormFieldType, ensure all interfaces are exported | Success: File compiles without TypeScript errors, all interfaces match design specifications exactly, proper use of optional fields and union types, comprehensive JSDoc documentation included. Mark this task as in-progress in tasks.md before starting, and mark as complete when done._
+  - _Prompt: Role: TypeScript Developer specializing in type systems and domain modeling | Task: Implement the task for spec question-set-list-ui, first run spec-workflow-guide to get the workflow guide then implement the task: Create comprehensive TypeScript interfaces in apps/newInstructionsUi/src/app/types/questionSet.types.ts for all data structures including QuestionSet (id, name, description, isFunctional, category, lastUpdated, version), FormData (id, name, version, sections, questions?, steps?, metadata), FormStepData (id, title, description?, order?, questions), FormSection (id, title, description, order, fields), FormField (id, type, label, required, placeholder, validation, options, defaultValue, category?), FormFieldType union, ValidationRule, FieldOption, FormMetadata, QuestionSetsResponse, FormDetailResponse, SubmissionResponse, and ApiErrorResponse. Include comprehensive JSDoc comments for each interface. | Restrictions: Use exact field names from design document, make optional fields explicit with ?, use union types for FormFieldType, ensure all interfaces are exported, add FormStepData for multi-step support | Success: File compiles without TypeScript errors, all interfaces match design specifications exactly including multi-step types, proper use of optional fields and union types, comprehensive JSDoc documentation included. Mark this task as in-progress in tasks.md before starting, and mark as complete when done._
 
 ## Service Layer - API Client
 
@@ -104,25 +104,61 @@
   - _Requirements: 1.2_
   - _Prompt: Role: QA Engineer with expertise in async testing, edge cases, and MSW | Task: Implement the task for spec question-set-list-ui, first run spec-workflow-guide to get the workflow guide then implement the task: Create unit tests in apps/newInstructionsUi/src/app/hooks/useFormService.spec.ts for useFormService hook using MSW. Import server from '../mocks/server'. Test scenarios: initial state is { formData: null, loading: false, error: null }; fetchForm sets loading=true then updates formData on success (MSW returns data); fetchForm sets error on failure (use server.use for error); AbortError doesn't set error state; calling fetchForm twice cancels first request (verify by checking only last call's data appears); reset clears all state and aborts ongoing request. Use waitFor for async updates, verify AbortController behavior by testing race conditions. No need to mock formService - MSW intercepts real calls. | Restrictions: Use MSW for API mocking, test cancellation behavior explicitly with race condition scenarios, verify AbortError handling, ensure test isolation | Success: All hook behaviors tested including race condition prevention with MSW, AbortController usage verified through integration testing, error handling including AbortError validated, reset function tested. Mark this task as in-progress in tasks.md before starting, and mark as complete when done._
 
+## Service Layer - Step Organization
+
+- [ ] 13. Create stepOrganizer service
+  - File: apps/newInstructionsUi/src/app/services/stepOrganizer.ts (create new)
+  - Implement StepOrganizer class that analyzes form data and organizes questions into logical steps
+  - Purpose: Convert form data into multi-step structure with appropriate grouping
+  - _Leverage: FormData, FormStepData types_
+  - _Requirements: 2.2 (Multi-step form organization)_
+  - _Prompt: Role: Frontend Architect specializing in data transformation and UX patterns | Task: Implement the task for spec question-set-list-ui, first run spec-workflow-guide to get the workflow guide then implement the task: Create StepOrganizer class in apps/newInstructionsUi/src/app/services/stepOrganizer.ts implementing StepOrganizerService interface with organizeIntoSteps(formData: FormData): FormStepData[] method. Strategy 1: If formData.steps exists and has length > 0, map to FormStepData format with id, title, description, questions. Strategy 2: If formData.sections exists and has length > 0, convert each section to a step. Strategy 3: Default grouping - use private groupByDefault(questions: FormField[]) method that groups questions into steps of 6 questions each (DEFAULT_QUESTIONS_PER_STEP = 6), generating step titles like "Step 1 of N". Use constants MIN_QUESTIONS_PER_STEP = 3, MAX_QUESTIONS_PER_STEP = 8 for configuration. Export singleton stepOrganizer instance. | Restrictions: Must handle all three strategies, default grouping should be sensible (not too many/few questions per step), generate clear step titles, pure function with no side effects | Success: All three organization strategies implemented, default grouping creates reasonable step sizes, proper TypeScript types, handles edge cases (empty questions, single question), exports singleton. Mark this task as in-progress in tasks.md before starting, and mark as complete when done._
+
+- [ ] 14. Create stepOrganizer service tests
+  - File: apps/newInstructionsUi/src/app/services/stepOrganizer.spec.ts (create new)
+  - Write tests for all organization strategies and edge cases
+  - Purpose: Verify step organization logic reliability
+  - _Leverage: Jest_
+  - _Requirements: 2.2_
+  - _Prompt: Role: QA Engineer with expertise in data transformation testing | Task: Implement the task for spec question-set-list-ui, first run spec-workflow-guide to get the workflow guide then implement the task: Create unit tests in apps/newInstructionsUi/src/app/services/stepOrganizer.spec.ts. Test scenarios: Strategy 1 - uses explicit formData.steps when provided, preserves step order and properties; Strategy 2 - converts formData.sections to steps when no explicit steps; Strategy 3 - groups flat questions array into steps of ~6 questions, calculates correct step count, handles remainder questions, generates appropriate titles; Edge cases - empty questions returns empty array, single question creates one step, large number of questions (30+) creates multiple steps correctly. Verify FormStepData structure matches interface. No MSW needed - testing pure logic. | Restrictions: Test all three strategies independently, verify edge cases, ensure step titles are clear, check array handling | Success: All organization strategies tested, edge cases covered, step count calculations verified, proper data structure returned. Mark this task as in-progress in tasks.md before starting, and mark as complete when done._
+
+## Custom Hooks - Multi-Step Form Management
+
+- [ ] 15. Create useMultiStepForm hook
+  - File: apps/newInstructionsUi/src/app/hooks/useMultiStepForm.ts (create new)
+  - Implement custom hook for managing multi-step form state, navigation, and data aggregation
+  - Purpose: Centralize multi-step form state management and navigation logic
+  - _Leverage: React hooks (useState, useMemo, useCallback), stepOrganizer service_
+  - _Requirements: 2.2, 2.3 (Multi-step form display and navigation)_
+  - _Prompt: Role: Senior React Developer with expertise in complex state management and custom hooks | Task: Implement the task for spec question-set-list-ui, first run spec-workflow-guide to get the workflow guide then implement the task: Create useMultiStepForm hook in apps/newInstructionsUi/src/app/hooks/useMultiStepForm.ts that accepts formData: FormData parameter and returns { currentStep: number, totalSteps: number, steps: FormStepData[], formDataByStep: Record<number, Record<string, unknown>>, completedSteps: number[], goToNext: (stepData) => void, goToPrevious: (stepData?) => void, goToStep: (stepIndex) => void, isFirstStep: boolean, isLastStep: boolean, saveStepData: (stepIndex, data) => void, getAllFormData: () => Record<string, unknown> }. Use useMemo to organize steps with stepOrganizer.organizeIntoSteps(formData). Use useState for currentStep (initial 0), formDataByStep (initial {}), completedSteps (initial []). Implement goToNext that saves current step data, adds to completedSteps if not present, increments currentStep (max: steps.length-1). Implement goToPrevious that optionally saves current step data, decrements currentStep (min: 0). Implement goToStep for direct navigation. Implement getAllFormData that merges all step data objects. Use useCallback for all navigation functions. | Restrictions: Proper dependency arrays in hooks, prevent index out of bounds, immutable state updates, memoize expensive operations | Success: Hook manages multi-step state correctly, navigation functions work, step data persists across navigation, completedSteps tracking works, data aggregation merges all steps, no unnecessary re-renders. Mark this task as in-progress in tasks.md before starting, and mark as complete when done._
+
+- [ ] 16. Create useMultiStepForm hook tests
+  - File: apps/newInstructionsUi/src/app/hooks/useMultiStepForm.spec.ts (create new)
+  - Write tests for hook navigation, state management, and data aggregation
+  - Purpose: Verify multi-step form state management reliability
+  - _Leverage: @testing-library/react (renderHook, act), Jest_
+  - _Requirements: 2.2, 2.3_
+  - _Prompt: Role: QA Engineer with React hook testing expertise | Task: Implement the task for spec question-set-list-ui, first run spec-workflow-guide to get the workflow guide then implement the task: Create unit tests in apps/newInstructionsUi/src/app/hooks/useMultiStepForm.spec.ts. Create mock FormData with 3 steps for testing. Test scenarios: initial state - currentStep=0, isFirstStep=true, isLastStep=false, empty formDataByStep; goToNext saves step data and increments currentStep, adds to completedSteps; goToNext on last step doesn't exceed bounds; goToPrevious decrements currentStep, optionally saves data; goToPrevious on first step doesn't go below 0; goToStep jumps to specified step index, validates bounds; saveStepData stores data at correct index; getAllFormData merges all saved step data correctly; completedSteps tracks visited steps; isFirstStep/isLastStep booleans correct at boundaries. Use renderHook and act for state updates. No MSW needed - testing state logic. | Restrictions: Test all navigation scenarios including boundaries, verify data persistence, check aggregation logic, use act for state updates | Success: All navigation functions tested, boundary conditions validated, data persistence verified, aggregation logic tested, completedSteps tracking confirmed. Mark this task as in-progress in tasks.md before starting, and mark as complete when done._
+
 ## Presentation Components
 
-- [ ] 13. Create QuestionSetItem component
+- [ ] 17. Create QuestionSetItem component
   - File: apps/newInstructionsUi/src/app/components/QuestionSetList/QuestionSetItem.tsx (create new)
   - Implement presentational component rendering individual question set with name, functional status badge, loading indicator, hover states
   - Purpose: Display single question set item with visual feedback
   - _Leverage: @spec-kit-demo-v2/design-system (Card, CardContent, Typography, Chip, CircularProgress, ListItemButton), @mui/icons-material_
-  - _Requirements: 1.1, 1.3 (Display and Visual Feedback)_
+  - _Requirements: 1.1, 3 (Display and Visual Feedback)_
   - _Prompt: Role: React Frontend Developer specializing in Material UI and component design | Task: Implement the task for spec question-set-list-ui, first run spec-workflow-guide to get the workflow guide then implement the task: Create QuestionSetItem component in apps/newInstructionsUi/src/app/components/QuestionSetList/QuestionSetItem.tsx accepting props { questionSet: QuestionSet, isSelected: boolean, isLoading: boolean, onSelect: (id: string) => void, disabled: boolean }. Use Card component as container, ListItemButton for interaction. Display questionSet.name in Typography variant="h6". Show Chip with label="Functional" color="success" when isFunctional=true, label="Not Available" color="default" when false. Show CircularProgress size={20} when isLoading=true. Apply hover effect with sx={{ '&:hover': { bgcolor: 'action.hover' } }}. Disable button when disabled=true or isFunctional=false. Call onSelect(questionSet.id) on click. Use spacing and styling from design system. | Restrictions: Pure presentational component (no business logic or data fetching), use design-system components only, proper TypeScript props interface, accessible (ARIA labels for icons), disabled state properly handled | Success: Component renders correctly with all visual states (normal, hover, selected, loading, disabled), functional status badge displays accurately, onClick handler works, proper Material UI styling applied, accessible. Mark this task as in-progress in tasks.md before starting, and mark as complete when done._
 
-- [ ] 14. Create QuestionSetItem component tests
+- [ ] 18. Create QuestionSetItem component tests
   - File: apps/newInstructionsUi/src/app/components/QuestionSetList/QuestionSetItem.spec.tsx (create new)
   - Write tests for all component states and interactions
   - Purpose: Ensure component renders correctly in all states
   - _Leverage: @testing-library/react, Jest_
-  - _Requirements: 1.1, 1.3_
+  - _Requirements: 1.1, 3_
   - _Prompt: Role: QA Engineer with expertise in React component testing | Task: Implement the task for spec question-set-list-ui, first run spec-workflow-guide to get the workflow guide then implement the task: Create unit tests in apps/newInstructionsUi/src/app/components/QuestionSetList/QuestionSetItem.spec.tsx. Test scenarios: renders question set name correctly, displays "Functional" badge when isFunctional=true, displays "Not Available" badge when isFunctional=false, shows loading indicator when isLoading=true, calls onSelect with correct ID when clicked, button is disabled when disabled=true, button is disabled when isFunctional=false, shows selected visual state when isSelected=true. Use fireEvent.click for interactions, getByText/getByRole for queries. No MSW needed - this is a presentational component. | Restrictions: Test component in isolation (no external dependencies to mock), verify all prop combinations, check accessibility, ensure no console errors | Success: All component states and behaviors tested, interaction handlers verified, visual states validated, tests pass cleanly. Mark this task as in-progress in tasks.md before starting, and mark as complete when done._
 
-- [ ] 15. Create QuestionSetList barrel export
+- [ ] 19. Create QuestionSetList barrel export
   - File: apps/newInstructionsUi/src/app/components/QuestionSetList/index.ts (create new)
   - Export QuestionSetItem and QuestionSetList (to be created) from barrel file
   - Purpose: Clean import paths for consumers
@@ -131,7 +167,7 @@
 
 ## Container Components
 
-- [ ] 16. Create QuestionSetList container component
+- [ ] 20. Create QuestionSetList container component
   - File: apps/newInstructionsUi/src/app/components/QuestionSetList/QuestionSetList.tsx (create new)
   - Implement container component that uses useQuestionSets and useFormService hooks, renders list of QuestionSetItem components, handles loading/error/empty states
   - Purpose: Orchestrate question set list display and form retrieval

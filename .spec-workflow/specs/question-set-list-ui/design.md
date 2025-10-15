@@ -2,12 +2,13 @@
 
 ## Overview
 
-The **Question Set List UI** feature is a React-based component that provides users with an interface to browse available question sets (forms) and retrieve detailed form content for completion. This feature serves as the entry point for the form-filling workflow within the newInstructionsUI microfrontend application. The design follows the existing microfrontend architecture pattern using Module Federation and leverages the shared design system for consistent UI styling.
+The **Question Set List UI** feature is a React-based component that provides users with an interface to browse available question sets (forms) and complete them through a multi-step form workflow. This feature serves as the entry point for the form-filling workflow within the newInstructionsUI microfrontend application. Users can select a form, which is then displayed as a multi-step wizard where related questions are grouped into logical steps, providing a clear sense of progress and reducing cognitive load. The design follows the existing microfrontend architecture pattern using Module Federation and leverages the shared design system for consistent UI styling.
 
-The implementation consists of three main layers:
-1. **Presentation Layer**: React components for displaying question sets and handling user interactions
-2. **Service Layer**: Custom hooks and API client for form retrieval and data management
-3. **Data Layer**: TypeScript interfaces and data validation for type safety
+The implementation consists of four main layers:
+1. **Presentation Layer**: React components for displaying question sets, multi-step form navigation, and handling user interactions
+2. **State Management Layer**: Multi-step form state management including current step, form data across all steps, and navigation logic
+3. **Service Layer**: Custom hooks and API client for form retrieval, step organization, and data management
+4. **Data Layer**: TypeScript interfaces and data validation for type safety
 
 ## Steering Document Alignment
 
@@ -44,22 +45,34 @@ The implementation follows the documented project structure conventions:
   │   │   │   ├── QuestionSetItem.tsx
   │   │   │   ├── QuestionSetItem.spec.tsx
   │   │   │   └── index.ts
-  │   │   ├── FormDisplay/
-  │   │   │   ├── FormDisplay.tsx
-  │   │   │   ├── FormDisplay.spec.tsx
-  │   │   │   ├── FormSection.tsx
+  │   │   ├── MultiStepForm/
+  │   │   │   ├── MultiStepForm.tsx
+  │   │   │   ├── MultiStepForm.spec.tsx
+  │   │   │   ├── FormStep.tsx
+  │   │   │   ├── FormStep.spec.tsx
+  │   │   │   ├── StepNavigation.tsx
+  │   │   │   ├── StepNavigation.spec.tsx
+  │   │   │   ├── ProgressIndicator.tsx
+  │   │   │   ├── ProgressIndicator.spec.tsx
+  │   │   │   └── index.ts
+  │   │   ├── FormField/
   │   │   │   ├── FormField.tsx
+  │   │   │   ├── FormField.spec.tsx
   │   │   │   └── index.ts
   │   ├── hooks/
   │   │   ├── useQuestionSets.ts
   │   │   ├── useQuestionSets.spec.ts
   │   │   ├── useFormService.ts
   │   │   ├── useFormService.spec.ts
+  │   │   ├── useMultiStepForm.ts
+  │   │   ├── useMultiStepForm.spec.ts
   │   │   ├── useFormValidation.ts
   │   │   └── useFormValidation.spec.ts
   │   ├── services/
   │   │   ├── formService.ts
-  │   │   └── formService.spec.ts
+  │   │   ├── formService.spec.ts
+  │   │   ├── stepOrganizer.ts
+  │   │   └── stepOrganizer.spec.ts
   │   ├── types/
   │   │   └── questionSet.types.ts
   ```
@@ -69,21 +82,22 @@ The implementation follows the documented project structure conventions:
 ### Existing Components to Leverage
 
 - **@spec-kit-demo-v2/design-system**: 
-  - **MUI Components**: Box, Card, CardContent, Typography, List, ListItem, ListItemButton, CircularProgress, Alert, Chip, Stack, TextField, Select, Radio, Checkbox, Button
+  - **MUI Components**: Box, Card, CardContent, Typography, List, ListItem, ListItemButton, CircularProgress, Alert, Chip, Stack, TextField, Select, Radio, Checkbox, Button, Stepper, Step, StepLabel, StepButton, LinearProgress, Divider
   - **Theme System**: lightTheme, darkTheme, AppTheme provider for consistent styling
   - **Typography**: Pre-configured typography variants (h4, h5, h6, body1, body2)
   - **Spacing & Breakpoints**: Consistent spacing scale and responsive breakpoints
   
 - **React 19.0.0 Hooks**:
-  - useState for component state management
+  - useState for component state management (current step, form data)
   - useEffect for side effects (API calls)
-  - useMemo for expensive computations and memoization
+  - useMemo for expensive computations and memoization (step organization)
   - useCallback for function memoization to prevent unnecessary re-renders
+  - useReducer for complex multi-step form state management
 
 - **React Hook Form v7+** (to be installed):
-  - useForm hook for form state management
+  - useForm hook for individual step form state management
   - Controller component for controlled MUI inputs
-  - Built-in validation and error handling
+  - Built-in validation and error handling per step
   - TypeScript support for type-safe forms
 
 - **React Router v6.29.0/v7.9.4**:
@@ -120,7 +134,18 @@ Since the project doesn't have an established HTTP client library (no axios in d
 
 - **Custom Hooks for Data Fetching**: Reusable hooks that encapsulate loading states, error handling, and data caching patterns
 
-- **Form Display Component**: Component that uses React Hook Form to render and manage the retrieved form data
+- **Multi-Step Form Components**: Complete set of components for multi-step form workflow:
+  - MultiStepForm: Container that manages overall step navigation and form data
+  - FormStep: Individual step display with React Hook Form integration
+  - StepNavigation: Previous/Next/Submit button controls
+  - ProgressIndicator: Visual progress display (stepper or progress bar)
+
+- **Step Organization Service**: Logic to analyze form data and group questions into logical steps based on:
+  - Explicit step definitions in form data (if provided by API)
+  - Question categories or metadata
+  - Default grouping strategy (5-7 questions per step)
+
+- **Form Data Aggregation**: Logic to collect and merge form data from all steps for final submission
 
 ## Architecture
 
@@ -135,12 +160,19 @@ graph TD
     E --> F[formService API Client]
     F --> G[Backend API]
     
-    B --> M[FormDisplay]
-    M --> N[useForm Hook - React Hook Form]
-    M --> O[FormSection]
-    O --> P[FormField with Controller]
-    M --> Q[Submit Handler]
-    Q --> F
+    B --> M[MultiStepForm]
+    M --> N[useMultiStepForm Hook]
+    N --> O[Step Organization Logic]
+    M --> P[ProgressIndicator]
+    M --> Q[FormStep]
+    Q --> R[useForm Hook - React Hook Form]
+    Q --> S[FormField with Controller]
+    M --> T[StepNavigation]
+    T --> U[Previous/Next/Submit Buttons]
+    
+    N --> V[Form Data Aggregation]
+    V --> W[Submit Handler]
+    W --> F
     
     B --> H[Loading State UI]
     B --> I[Error State UI]
@@ -152,13 +184,18 @@ graph TD
     style B fill:#e3f2fd
     style C fill:#e3f2fd
     style M fill:#e8f5e9
-    style O fill:#e8f5e9
+    style Q fill:#e8f5e9
     style P fill:#e8f5e9
+    style T fill:#e8f5e9
+    style S fill:#e8f5e9
     style D fill:#fff3e0
     style E fill:#fff3e0
     style N fill:#fff3e0
+    style R fill:#fff3e0
     style F fill:#f3e5f5
     style G fill:#ffebee
+    style O fill:#fce4ec
+    style V fill:#fce4ec
 ```
 
 ### Data Flow
@@ -169,21 +206,38 @@ graph TD
 4. **Rendering**: Component renders list based on current state
 5. **User Interaction**: User clicks on a question set item
 6. **Form Retrieval**: useFormService hook fetches detailed form data
-7. **Form Display**: FormDisplay component receives formData and initializes React Hook Form
-8. **Form Initialization**: useForm hook:
-   - Builds defaultValues from formData structure
-   - Sets up validation rules based on field configurations
-   - Initializes form state (pristine, no errors)
-9. **User Input**: User fills out form fields
-   - React Hook Form tracks field values via Controller components
-   - Validation runs on blur (mode: 'onBlur')
-   - Errors displayed inline via FormHelperText
-10. **Form Submission**: User clicks submit
-    - handleSubmit validates all fields
-    - If valid: onSubmit callback called with form data
-    - Form data POSTed to backend API
+7. **Step Organization**: stepOrganizer service analyzes form data and creates logical steps:
+   - Checks for explicit step definitions in formData.steps
+   - Groups questions by category/section if available
+   - Falls back to default grouping (5-7 questions per step)
+   - Returns array of FormStep objects with grouped questions
+8. **Multi-Step Form Initialization**: MultiStepForm component receives organized steps
+9. **useMultiStepForm Hook Initialization**:
+   - Sets currentStep to 0 (first step)
+   - Initializes formDataByStep object to store data from each step
+   - Creates navigation handlers (goToNext, goToPrevious, goToStep)
+10. **Current Step Display**: FormStep component renders current step's questions
+11. **React Hook Form per Step**: Each FormStep uses useForm hook:
+    - Builds defaultValues from current step's questions
+    - Sets up validation rules for current step only
+    - Initializes form state for this step
+12. **User Input**: User fills out fields in current step
+    - React Hook Form tracks field values via Controller components
+    - Validation runs on blur (mode: 'onBlur')
+    - Errors displayed inline via FormHelperText
+13. **Step Navigation**:
+    - **Next Button**: Validates current step, saves data to formDataByStep, increments currentStep
+    - **Previous Button**: Saves current step data (no validation), decrements currentStep
+    - **Progress Indicator**: Updates to show current position (e.g., "Step 2 of 5")
+14. **Data Persistence**: All previously entered step data maintained in formDataByStep state
+15. **Returning to Previous Steps**: When user navigates back, FormStep loads saved data as defaultValues
+16. **Final Step Submission**: User clicks Submit on last step
+    - Validates final step
+    - Aggregates all step data from formDataByStep into single object
+    - onSubmit callback called with complete form data
+    - Complete form data POSTed to backend API
     - Success: form reset or navigation
-    - Error: display error alert, keep form data
+    - Error: display error alert, keep all step data intact
 
 ### Modular Design Principles
 
@@ -252,67 +306,149 @@ graph TD
 - **Dependencies**: None (pure presentational component)
 - **Reuses**: Card, CardContent, Typography, Chip, CircularProgress, ListItemButton from design-system
 
-### Component 3: FormDisplay
+### Component 3: MultiStepForm
 
-- **Purpose**: Container component that renders and manages the selected form using React Hook Form
-- **File**: `apps/newInstructionsUi/src/app/components/FormDisplay/FormDisplay.tsx`
+- **Purpose**: Container component that manages the multi-step form workflow, navigation, and data aggregation across all steps
+- **File**: `apps/newInstructionsUi/src/app/components/MultiStepForm/MultiStepForm.tsx`
 - **Props**:
   ```typescript
-  interface FormDisplayProps {
+  interface MultiStepFormProps {
     formData: FormData;
     onSubmit: (data: Record<string, unknown>) => Promise<void>;
     onCancel: () => void;
   }
   ```
+- **State**: Managed by custom useMultiStepForm hook
+  ```typescript
+  const {
+    currentStep,
+    totalSteps,
+    steps,
+    formDataByStep,
+    goToNext,
+    goToPrevious,
+    goToStep,
+    isFirstStep,
+    isLastStep,
+    saveStepData,
+    getAllFormData,
+  } = useMultiStepForm(formData);
+  
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<Error | null>(null);
+  ```
+- **Responsibilities**:
+  - Organize form data into logical steps using stepOrganizer service
+  - Render ProgressIndicator showing current step position
+  - Render current FormStep component with appropriate questions
+  - Render StepNavigation with Previous/Next/Submit buttons
+  - Handle step transitions (forward and backward)
+  - Save form data from each step as user progresses
+  - Aggregate all step data for final submission
+  - Handle form submission with loading and error states
+  - Provide cancel functionality to return to question set list
+- **Dependencies**: useMultiStepForm, FormStep, StepNavigation, ProgressIndicator
+- **Reuses**: Box, Typography, Alert, Stack, Paper from design-system
+
+### Component 4: FormStep
+
+- **Purpose**: Displays questions for a single step using React Hook Form for validation and state management
+- **File**: `apps/newInstructionsUi/src/app/components/MultiStepForm/FormStep.tsx`
+- **Props**:
+  ```typescript
+  interface FormStepProps {
+    step: FormStepData;
+    defaultValues: Record<string, unknown>;
+    onStepComplete: (data: Record<string, unknown>) => void;
+    stepRef: React.RefObject<FormStepHandle>; // Exposes validate and getData methods
+  }
+  
+  interface FormStepHandle {
+    validate: () => Promise<boolean>;
+    getData: () => Record<string, unknown>;
+  }
+  ```
 - **State**: Managed by React Hook Form's useForm hook
   ```typescript
-  const { 
-    control, 
-    handleSubmit, 
-    formState: { errors, isSubmitting, isDirty },
-    reset,
-    watch
+  const {
+    control,
+    handleSubmit,
+    formState: { errors, isDirty },
+    getValues,
+    trigger,
   } = useForm({
-    defaultValues: buildDefaultValues(formData),
+    defaultValues,
     mode: 'onBlur',
-    resolver: async (data) => validateFormData(data, formData.sections)
   });
   ```
 - **Responsibilities**:
-  - Initialize React Hook Form with form schema from formData
-  - Render form sections using FormSection components
-  - Handle form validation using built-in and custom validators
+  - Initialize React Hook Form with step's questions and saved data
+  - Render step title and description
+  - Render FormField components for each question in the step
   - Display validation errors inline
-  - Handle form submission with loading state
-  - Provide cancel/reset functionality
-  - Track form dirty state to warn about unsaved changes
-- **Dependencies**: useForm (React Hook Form), FormSection, FormField
-- **Reuses**: Box, Typography, Button, Alert, Stack from design-system
+  - Expose validation trigger to parent (for Next button)
+  - Expose form data getter to parent (for data collection)
+  - Handle validation on blur for individual fields
+- **Dependencies**: useForm (React Hook Form), FormField, useImperativeHandle (React)
+- **Reuses**: Box, Typography, Stack from design-system
 
-### Component 4: FormSection
+### Component 5: StepNavigation
 
-- **Purpose**: Presentational component that renders a section of the form with its fields
-- **File**: `apps/newInstructionsUi/src/app/components/FormDisplay/FormSection.tsx`
+- **Purpose**: Provides navigation controls for moving between steps and submitting the form
+- **File**: `apps/newInstructionsUi/src/app/components/MultiStepForm/StepNavigation.tsx`
 - **Props**:
   ```typescript
-  interface FormSectionProps {
-    section: FormSection;
-    control: Control<any>;
-    errors: FieldErrors;
+  interface StepNavigationProps {
+    currentStep: number;
+    totalSteps: number;
+    isFirstStep: boolean;
+    isLastStep: boolean;
+    isSubmitting: boolean;
+    onPrevious: () => void;
+    onNext: () => Promise<void>; // Async to allow validation
+    onSubmit: () => Promise<void>;
+    onCancel: () => void;
   }
   ```
 - **Responsibilities**:
-  - Render section title and description
-  - Map section fields to FormField components
-  - Pass React Hook Form control to each field
-  - Display section-level validation messages
-- **Dependencies**: FormField
-- **Reuses**: Box, Typography, Paper, Divider from design-system
+  - Render Previous button (hidden on first step)
+  - Render Next button (shown on all steps except last)
+  - Render Submit button (shown only on last step)
+  - Render Cancel button (always visible)
+  - Disable buttons during submission
+  - Provide visual feedback during async operations
+  - Display step position text (e.g., "Step 2 of 5")
+- **Dependencies**: None (pure presentational component)
+- **Reuses**: Button, Stack, Typography, CircularProgress from design-system
 
-### Component 5: FormField
+### Component 6: ProgressIndicator
+
+- **Purpose**: Visual indicator showing user's progress through the multi-step form
+- **File**: `apps/newInstructionsUi/src/app/components/MultiStepForm/ProgressIndicator.tsx`
+- **Props**:
+  ```typescript
+  interface ProgressIndicatorProps {
+    currentStep: number;
+    totalSteps: number;
+    steps: FormStepData[];
+    onStepClick?: (stepIndex: number) => void; // Optional: allow clicking to jump to steps
+    completedSteps: number[]; // Array of step indices that have been completed
+  }
+  ```
+- **Responsibilities**:
+  - Render Material UI Stepper component showing all steps
+  - Highlight current step
+  - Mark completed steps with checkmark
+  - Optionally allow clicking on previous steps to navigate back
+  - Show step titles/labels
+  - Provide responsive layout (horizontal on desktop, vertical on mobile)
+- **Dependencies**: None (pure presentational component)
+- **Reuses**: Stepper, Step, StepLabel, StepButton from design-system
+
+### Component 7: FormField
 
 - **Purpose**: Wrapper component that renders the appropriate MUI input based on field type using React Hook Form's Controller
-- **File**: `apps/newInstructionsUi/src/app/components/FormDisplay/FormField.tsx`
+- **File**: `apps/newInstructionsUi/src/app/components/FormField/FormField.tsx`
 - **Props**:
   ```typescript
   interface FormFieldProps {
@@ -511,6 +647,177 @@ graph TD
   }
   ```
 
+### Hook 3: useMultiStepForm
+
+- **Purpose**: Custom hook for managing multi-step form state, navigation, and data aggregation
+- **File**: `apps/newInstructionsUi/src/app/hooks/useMultiStepForm.ts`
+- **Parameters**:
+  ```typescript
+  function useMultiStepForm(formData: FormData)
+  ```
+- **Return Type**:
+  ```typescript
+  interface UseMultiStepFormReturn {
+    currentStep: number;
+    totalSteps: number;
+    steps: FormStepData[];
+    formDataByStep: Record<number, Record<string, unknown>>;
+    completedSteps: number[];
+    goToNext: (stepData: Record<string, unknown>) => void;
+    goToPrevious: (stepData?: Record<string, unknown>) => void;
+    goToStep: (stepIndex: number) => void;
+    isFirstStep: boolean;
+    isLastStep: boolean;
+    saveStepData: (stepIndex: number, data: Record<string, unknown>) => void;
+    getAllFormData: () => Record<string, unknown>;
+  }
+  ```
+- **Responsibilities**:
+  - Organize form data into steps using stepOrganizer service
+  - Track current step index
+  - Store form data for each completed step
+  - Track which steps have been completed
+  - Provide navigation functions (next, previous, jump to step)
+  - Aggregate all step data into single object for submission
+  - Persist step data as user navigates
+- **Dependencies**: stepOrganizer service, useState, useMemo, useCallback
+- **Implementation Pattern**:
+  ```typescript
+  export function useMultiStepForm(formData: FormData): UseMultiStepFormReturn {
+    const steps = useMemo(() => stepOrganizer.organizeIntoSteps(formData), [formData]);
+    
+    const [currentStep, setCurrentStep] = useState(0);
+    const [formDataByStep, setFormDataByStep] = useState<Record<number, Record<string, unknown>>>({});
+    const [completedSteps, setCompletedSteps] = useState<number[]>([]);
+
+    const saveStepData = useCallback((stepIndex: number, data: Record<string, unknown>) => {
+      setFormDataByStep(prev => ({ ...prev, [stepIndex]: data }));
+      if (!completedSteps.includes(stepIndex)) {
+        setCompletedSteps(prev => [...prev, stepIndex].sort());
+      }
+    }, [completedSteps]);
+
+    const goToNext = useCallback((stepData: Record<string, unknown>) => {
+      saveStepData(currentStep, stepData);
+      setCurrentStep(prev => Math.min(prev + 1, steps.length - 1));
+    }, [currentStep, steps.length, saveStepData]);
+
+    const goToPrevious = useCallback((stepData?: Record<string, unknown>) => {
+      if (stepData) {
+        saveStepData(currentStep, stepData);
+      }
+      setCurrentStep(prev => Math.max(prev - 1, 0));
+    }, [currentStep, saveStepData]);
+
+    const goToStep = useCallback((stepIndex: number) => {
+      if (stepIndex >= 0 && stepIndex < steps.length) {
+        setCurrentStep(stepIndex);
+      }
+    }, [steps.length]);
+
+    const getAllFormData = useCallback(() => {
+      return Object.values(formDataByStep).reduce((acc, stepData) => {
+        return { ...acc, ...stepData };
+      }, {});
+    }, [formDataByStep]);
+
+    return {
+      currentStep,
+      totalSteps: steps.length,
+      steps,
+      formDataByStep,
+      completedSteps,
+      goToNext,
+      goToPrevious,
+      goToStep,
+      isFirstStep: currentStep === 0,
+      isLastStep: currentStep === steps.length - 1,
+      saveStepData,
+      getAllFormData,
+    };
+  }
+  ```
+
+### Service: stepOrganizer
+
+- **Purpose**: Service for analyzing form data and organizing questions into logical steps
+- **File**: `apps/newInstructionsUi/src/app/services/stepOrganizer.ts`
+- **Interfaces**:
+  ```typescript
+  interface StepOrganizerService {
+    organizeIntoSteps(formData: FormData): FormStepData[];
+  }
+  
+  interface FormStepData {
+    id: string;
+    title: string;
+    description?: string;
+    questions: FormField[];
+  }
+  ```
+- **Responsibilities**:
+  - Check for explicit step definitions in formData.steps
+  - Group questions by category/section if available
+  - Apply default grouping strategy (5-7 questions per step)
+  - Generate step titles and descriptions
+  - Ensure each step has manageable number of questions
+- **Dependencies**: None
+- **Implementation Pattern**:
+  ```typescript
+  class StepOrganizer implements StepOrganizerService {
+    private readonly DEFAULT_QUESTIONS_PER_STEP = 6;
+    private readonly MIN_QUESTIONS_PER_STEP = 3;
+    private readonly MAX_QUESTIONS_PER_STEP = 8;
+
+    organizeIntoSteps(formData: FormData): FormStepData[] {
+      // Strategy 1: Use explicit steps if provided
+      if (formData.steps && formData.steps.length > 0) {
+        return formData.steps.map((step, index) => ({
+          id: step.id || `step-${index}`,
+          title: step.title || `Step ${index + 1}`,
+          description: step.description,
+          questions: step.questions,
+        }));
+      }
+
+      // Strategy 2: Group by section/category
+      if (formData.sections && formData.sections.length > 0) {
+        return formData.sections.map((section, index) => ({
+          id: section.id || `step-${index}`,
+          title: section.title || `Step ${index + 1}`,
+          description: section.description,
+          questions: section.fields,
+        }));
+      }
+
+      // Strategy 3: Default grouping
+      return this.groupByDefault(formData.questions || []);
+    }
+
+    private groupByDefault(questions: FormField[]): FormStepData[] {
+      const steps: FormStepData[] = [];
+      const questionCount = questions.length;
+      const stepCount = Math.ceil(questionCount / this.DEFAULT_QUESTIONS_PER_STEP);
+
+      for (let i = 0; i < stepCount; i++) {
+        const startIndex = i * this.DEFAULT_QUESTIONS_PER_STEP;
+        const endIndex = Math.min(startIndex + this.DEFAULT_QUESTIONS_PER_STEP, questionCount);
+        
+        steps.push({
+          id: `step-${i}`,
+          title: `Step ${i + 1} of ${stepCount}`,
+          description: undefined,
+          questions: questions.slice(startIndex, endIndex),
+        });
+      }
+
+      return steps;
+    }
+  }
+
+  export const stepOrganizer = new StepOrganizer();
+  ```
+
 ### Service: formService
 
 - **Purpose**: API client for form-related HTTP requests
@@ -647,15 +954,25 @@ function validateQuestionSet(data: unknown): QuestionSet {
 
 ### FormData
 
-Represents the complete form structure with questions and fields.
+Represents the complete form structure with questions and fields, supporting multi-step organization.
 
 ```typescript
 interface FormData {
   id: string;                    // Same as QuestionSet.id
   name: string;                  // Form name
   version: string;               // Form version
-  sections: FormSection[];       // Array of form sections
+  sections: FormSection[];       // Array of form sections (legacy/backward compatibility)
+  questions?: FormField[];       // Flat array of all questions (fallback if no sections/steps)
+  steps?: FormStepData[];        // Explicit step definitions (preferred for multi-step)
   metadata?: FormMetadata;       // Optional metadata
+}
+
+interface FormStepData {
+  id: string;                    // Step identifier
+  title: string;                 // Step title (e.g., "Personal Information")
+  description?: string;          // Optional step description
+  order?: number;                // Display order (if provided)
+  questions: FormField[];        // Array of questions in this step
 }
 
 interface FormSection {
@@ -675,6 +992,7 @@ interface FormField {
   validation?: ValidationRule[]; // Validation rules
   options?: FieldOption[];       // Options for select/radio/checkbox
   defaultValue?: unknown;        // Default value
+  category?: string;             // Optional category for grouping in multi-step
 }
 
 type FormFieldType = 
