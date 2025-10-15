@@ -1,6 +1,6 @@
 {
   "filePath": ".spec-workflow/specs/question-set-list-ui/requirements.md",
-  "currentVersion": 1,
+  "currentVersion": 2,
   "snapshots": [
     {
       "version": 1,
@@ -9,6 +9,14 @@
       "trigger": "initial",
       "approvalId": "approval_1760464049572_nq8haf0yu",
       "approvalTitle": "Requirements Document for Question Set List UI"
+    },
+    {
+      "version": 2,
+      "filename": "snapshot-002.json",
+      "timestamp": "2025-10-15T00:12:15.165Z",
+      "trigger": "approved",
+      "approvalId": "approval_1760487029148_n86t2bd32",
+      "approvalTitle": "Updated Requirements: Multi-Step Form UI"
     }
   ]
 }
