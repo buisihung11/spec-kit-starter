@@ -18,7 +18,8 @@
         "tsConfig": "apps/newInstructionsUi/tsconfig.app.json",
         "assets": [
           "apps/newInstructionsUi/src/favicon.ico",
-          "apps/newInstructionsUi/src/assets"
+          "apps/newInstructionsUi/src/assets",
+          "apps/newInstructionsUi/src/mockServiceWorker.js"
         ],
         "styles": [],
         "scripts": [],

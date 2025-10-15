@@ -33,6 +33,7 @@ export { default as Divider } from '@mui/material/Divider';
 export { default as Stack } from '@mui/material/Stack';
 export { default as Chip } from '@mui/material/Chip';
 export { default as Alert } from '@mui/material/Alert';
+export { default as Snackbar } from '@mui/material/Snackbar';
 export { default as CircularProgress } from '@mui/material/CircularProgress';
 export { default as Select } from '@mui/material/Select';
 export { default as Radio } from '@mui/material/Radio';
