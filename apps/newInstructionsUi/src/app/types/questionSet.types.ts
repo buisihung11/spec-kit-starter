@@ -33,6 +33,10 @@ export interface FormData {
   name: string;
   /** Version string for the form */
   version: string;
+  /** Optional display title for the form */
+  title?: string;
+  /** Optional description of the form */
+  description?: string;
   /** Ordered array of form sections */
   sections: FormSection[];
   /** Optional flat array of questions for backward compatibility */
@@ -41,6 +45,8 @@ export interface FormData {
   steps?: FormStepData[];
   /** Additional metadata about the form */
   metadata: FormMetadata;
+  /** Reference to the question set this form belongs to */
+  questionSetId: string;
 }
 
 /**
