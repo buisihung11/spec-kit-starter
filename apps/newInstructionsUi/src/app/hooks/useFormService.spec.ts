@@ -1,7 +1,7 @@
 import { renderHook, waitFor, act } from '@testing-library/react';
 import { useFormService } from './useFormService';
 import { server } from '../mocks/server';
-import { http, HttpResponse } from 'msw';
+import { rest } from 'msw';
 
 describe('useFormService', () => {
   it('should have initial state with formData=null, loading=false, error=null', () => {
@@ -47,10 +47,10 @@ describe('useFormService', () => {
   it('should handle fetch errors and set error state', async () => {
     // Override handler to return 404
     server.use(
-      http.get('/api/question-sets/:id', () => {
-        return HttpResponse.json(
-          { error: 'NotFound', message: 'Form not found', status: 404 },
-          { status: 404 }
+      rest.get('/api/question-sets/:id', (req, res, ctx) => {
+        return res(
+          ctx.status(404),
+          ctx.json({ error: 'NotFound', message: 'Form not found', status: 404 })
         );
       })
     );
@@ -95,16 +95,18 @@ describe('useFormService', () => {
   it('should cancel previous request when fetchForm is called again (race condition prevention)', async () => {
     // Add delay to first request
     server.use(
-      http.get('/api/question-sets/1', async () => {
+      rest.get('/api/question-sets/1', async (req, res, ctx) => {
         await new Promise((resolve) => setTimeout(resolve, 100));
-        return HttpResponse.json({
-          data: {
-            id: '1',
-            name: 'Form 1',
-            version: '1.0.0',
-            sections: [],
-          },
-        });
+        return res(
+          ctx.json({
+            data: {
+              id: '1',
+              name: 'Form 1',
+              version: '1.0.0',
+              sections: [],
+            },
+          })
+        );
       })
     );
 

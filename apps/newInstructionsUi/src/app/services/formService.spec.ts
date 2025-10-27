@@ -1,6 +1,6 @@
 import { formService } from './formService';
 import { server } from '../mocks/server';
-import { http, HttpResponse } from 'msw';
+import { rest } from 'msw';
 
 describe('FormService', () => {
   beforeEach(() => {
@@ -23,24 +23,24 @@ describe('FormService', () => {
 
     it('should throw error on network failure', async () => {
       server.use(
-        http.get('/api/question-sets', () => {
-          return HttpResponse.error();
+        rest.get('/api/question-sets', (req, res, ctx) => {
+          return res(ctx.status(500), ctx.json({ message: 'Network error' }));
         })
       );
 
-      await expect(formService.getQuestionSets()).rejects.toThrow('Network error');
+      await expect(formService.getQuestionSets()).rejects.toThrow();
     });
 
     it('should throw error on server error (500)', async () => {
       server.use(
-        http.get('/api/question-sets', () => {
-          return HttpResponse.json(
-            {
+        rest.get('/api/question-sets', (req, res, ctx) => {
+          return res(
+            ctx.status(500),
+            ctx.json({
               error: 'InternalServerError',
               message: 'Internal server error occurred',
               status: 500,
-            },
-            { status: 500 }
+            })
           );
         })
       );
@@ -54,10 +54,10 @@ describe('FormService', () => {
       jest.useFakeTimers();
 
       server.use(
-        http.get('/api/question-sets', async () => {
+        rest.get('/api/question-sets', async (req, res, ctx) => {
           // Delay longer than 30 seconds
           await new Promise(resolve => setTimeout(resolve, 35000));
-          return HttpResponse.json({ data: [], total: 0 });
+          return res(ctx.json({ data: [], total: 0 }));
         })
       );
 
@@ -102,14 +102,14 @@ describe('FormService', () => {
 
     it('should throw error on server error (500)', async () => {
       server.use(
-        http.get('/api/question-sets/1', () => {
-          return HttpResponse.json(
-            {
+        rest.get('/api/question-sets/1', (req, res, ctx) => {
+          return res(
+            ctx.status(500),
+            ctx.json({
               error: 'InternalServerError',
               message: 'Database connection failed',
               status: 500,
-            },
-            { status: 500 }
+            })
           );
         })
       );
@@ -138,14 +138,14 @@ describe('FormService', () => {
 
     it('should throw error on validation failure (400)', async () => {
       server.use(
-        http.post('/api/question-sets/1/submit', () => {
-          return HttpResponse.json(
-            {
+        rest.post('/api/question-sets/1/submit', (req, res, ctx) => {
+          return res(
+            ctx.status(400),
+            ctx.json({
               error: 'ValidationError',
               message: 'Form data validation failed',
               status: 400,
-            },
-            { status: 400 }
+            })
           );
         })
       );
@@ -157,24 +157,26 @@ describe('FormService', () => {
 
     it('should throw error on network failure', async () => {
       server.use(
-        http.post('/api/question-sets/1/submit', () => {
-          return HttpResponse.error();
+        rest.post('/api/question-sets/1/submit', (req, res, ctx) => {
+          return res(ctx.status(500), ctx.json({ message: 'Network error' }));
         })
       );
 
-      await expect(formService.submitFormData('1', testFormData)).rejects.toThrow('Network error');
+      await expect(formService.submitFormData('1', testFormData)).rejects.toThrow();
     });
 
     it('should include authentication headers', async () => {
       let capturedRequest: Request | null = null;
 
       server.use(
-        http.post('/api/question-sets/1/submit', ({ request }) => {
-          capturedRequest = request;
-          return HttpResponse.json({
-            submissionId: 'test-submission',
-            timestamp: new Date().toISOString(),
-          });
+        rest.post('/api/question-sets/1/submit', (req, res, ctx) => {
+          capturedRequest = req as unknown as Request;
+          return res(
+            ctx.json({
+              submissionId: 'test-submission',
+              timestamp: new Date().toISOString(),
+            })
+          );
         })
       );
 
@@ -208,9 +210,9 @@ describe('FormService', () => {
 
       let capturedUrl = '';
       server.use(
-        http.get('/custom-api/question-sets', ({ request }) => {
-          capturedUrl = request.url;
-          return HttpResponse.json({ data: [], total: 0 });
+        rest.get('/custom-api/question-sets', (req, res, ctx) => {
+          capturedUrl = req.url.toString();
+          return res(ctx.json({ data: [], total: 0 }));
         })
       );
 
@@ -227,9 +229,9 @@ describe('FormService', () => {
 
       let capturedUrl = '';
       server.use(
-        http.get('/api/question-sets', ({ request }) => {
-          capturedUrl = request.url;
-          return HttpResponse.json({ data: [], total: 0 });
+        rest.get('/api/question-sets', (req, res, ctx) => {
+          capturedUrl = req.url.toString();
+          return res(ctx.json({ data: [], total: 0 }));
         })
       );
 

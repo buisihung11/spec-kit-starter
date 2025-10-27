@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { QuestionSetList } from './QuestionSetList';
 import { server } from '../../mocks/server';
-import { http, HttpResponse } from 'msw';
+import { rest } from 'msw';
 
 describe('QuestionSetList', () => {
   const mockOnFormSelected = jest.fn();
@@ -35,10 +35,10 @@ describe('QuestionSetList', () => {
   it('should render error Alert when API fails', async () => {
     // Override handler to return error
     server.use(
-      http.get('/api/question-sets', () => {
-        return HttpResponse.json(
-          { error: 'ServerError', message: 'Failed to load question sets', status: 500 },
-          { status: 500 }
+      rest.get('/api/question-sets', (req, res, ctx) => {
+        return res(
+          ctx.status(500),
+          ctx.json({ error: 'ServerError', message: 'Failed to load question sets', status: 500 })
         );
       })
     );
@@ -56,28 +56,30 @@ describe('QuestionSetList', () => {
     // First fail, then succeed
     let callCount = 0;
     server.use(
-      http.get('/api/question-sets', () => {
+      rest.get('/api/question-sets', (req, res, ctx) => {
         callCount++;
         if (callCount === 1) {
-          return HttpResponse.json(
-            { error: 'ServerError', message: 'Server error', status: 500 },
-            { status: 500 }
+          return res(
+            ctx.status(500),
+            ctx.json({ error: 'ServerError', message: 'Server error', status: 500 })
           );
         }
-        return HttpResponse.json({
-          data: [
-            {
-              id: '1',
-              name: 'Test Question Set',
-              description: 'Test',
-              isFunctional: true,
-              category: 'Test',
-              lastUpdated: '2025-10-15T00:00:00Z',
-              version: '1.0.0',
-            },
-          ],
-          total: 1,
-        });
+        return res(
+          ctx.json({
+            data: [
+              {
+                id: '1',
+                name: 'Test Question Set',
+                description: 'Test',
+                isFunctional: true,
+                category: 'Test',
+                lastUpdated: '2025-10-15T00:00:00Z',
+                version: '1.0.0',
+              },
+            ],
+            total: 1,
+          })
+        );
       })
     );
 
@@ -100,8 +102,8 @@ describe('QuestionSetList', () => {
 
   it('should render empty state when no question sets available', async () => {
     server.use(
-      http.get('/api/question-sets', () => {
-        return HttpResponse.json({ data: [], total: 0 });
+      rest.get('/api/question-sets', (req, res, ctx) => {
+        return res(ctx.json({ data: [], total: 0 }));
       })
     );
 
@@ -169,10 +171,10 @@ describe('QuestionSetList', () => {
   it('should call onError callback when form fetch fails', async () => {
     // Override form fetch to fail
     server.use(
-      http.get('/api/question-sets/:id', () => {
-        return HttpResponse.json(
-          { error: 'NotFound', message: 'Form not found', status: 404 },
-          { status: 404 }
+      rest.get('/api/question-sets/:id', (req, res, ctx) => {
+        return res(
+          ctx.status(404),
+          ctx.json({ error: 'NotFound', message: 'Form not found', status: 404 })
         );
       })
     );

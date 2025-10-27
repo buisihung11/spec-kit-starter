@@ -1,7 +1,7 @@
 import { renderHook, waitFor } from '@testing-library/react';
 import { useQuestionSets } from './useQuestionSets';
 import { server } from '../mocks/server';
-import { http, HttpResponse } from 'msw';
+import { rest } from 'msw';
 
 describe('useQuestionSets', () => {
   it('should have initial state with loading=true', () => {
@@ -30,10 +30,10 @@ describe('useQuestionSets', () => {
   it('should handle fetch errors', async () => {
     // Override the handler to return an error
     server.use(
-      http.get('/api/question-sets', () => {
-        return HttpResponse.json(
-          { error: 'ServerError', message: 'Internal server error', status: 500 },
-          { status: 500 }
+      rest.get('/api/question-sets', (req, res, ctx) => {
+        return res(
+          ctx.status(500),
+          ctx.json({ error: 'ServerError', message: 'Internal server error', status: 500 })
         );
       })
     );
@@ -52,8 +52,8 @@ describe('useQuestionSets', () => {
   it('should handle network errors', async () => {
     // Override the handler to return a network error
     server.use(
-      http.get('/api/question-sets', () => {
-        return HttpResponse.error();
+      rest.get('/api/question-sets', (req, res, ctx) => {
+        return res(ctx.status(500), ctx.json({ message: 'Network error' }));
       })
     );
 
@@ -79,21 +79,23 @@ describe('useQuestionSets', () => {
 
     // Override the handler to return different data
     server.use(
-      http.get('/api/question-sets', () => {
-        return HttpResponse.json({
-          data: [
-            {
-              id: '3',
-              name: 'New Question Set',
-              description: 'A new question set',
-              isFunctional: true,
-              category: 'New Category',
-              lastUpdated: '2025-10-15T00:00:00Z',
-              version: '1.0.0',
-            },
-          ],
-          total: 1,
-        });
+      rest.get('/api/question-sets', (req, res, ctx) => {
+        return res(
+          ctx.json({
+            data: [
+              {
+                id: '3',
+                name: 'New Question Set',
+                description: 'A new question set',
+                isFunctional: true,
+                category: 'New Category',
+                lastUpdated: '2025-10-15T00:00:00Z',
+                version: '1.0.0',
+              },
+            ],
+            total: 1,
+          })
+        );
       })
     );
 
@@ -120,10 +122,10 @@ describe('useQuestionSets', () => {
 
     // Override the handler to return an error for refetch
     server.use(
-      http.get('/api/question-sets', () => {
-        return HttpResponse.json(
-          { error: 'ServerError', message: 'Server error on refetch', status: 500 },
-          { status: 500 }
+      rest.get('/api/question-sets', (req, res, ctx) => {
+        return res(
+          ctx.status(500),
+          ctx.json({ error: 'ServerError', message: 'Server error on refetch', status: 500 })
         );
       })
     );

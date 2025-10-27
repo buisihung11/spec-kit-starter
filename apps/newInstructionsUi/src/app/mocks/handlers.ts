@@ -1,4 +1,4 @@
-import { http, HttpResponse } from 'msw';
+import { rest } from 'msw';
 import type { QuestionSet, FormData } from '../types/questionSet.types';
 
 // Mock question sets data
@@ -115,77 +115,81 @@ export const mockFormData: FormData = {
 // Success handlers
 export const handlers = [
   // GET /api/question-sets
-  http.get('/api/question-sets', () => {
-    return HttpResponse.json({
-      data: mockQuestionSets,
-      total: mockQuestionSets.length,
-    });
+  rest.get('/api/question-sets', (req, res, ctx) => {
+    return res(
+      ctx.json({
+        data: mockQuestionSets,
+        total: mockQuestionSets.length,
+      })
+    );
   }),
 
   // GET /api/question-sets/:id
-  http.get('/api/question-sets/:id', ({ params }) => {
-    const { id } = params;
+  rest.get('/api/question-sets/:id', (req, res, ctx) => {
+    const { id } = req.params;
 
     if (id === '1') {
-      return HttpResponse.json({ data: mockFormData });
+      return res(ctx.json({ data: mockFormData }));
     }
 
-    return HttpResponse.json(
-      {
+    return res(
+      ctx.status(404),
+      ctx.json({
         error: 'NotFound',
         message: `Question set with id '${id}' not found`,
         status: 404,
-      },
-      { status: 404 }
+      })
     );
   }),
 
   // POST /api/question-sets/:id/submit
-  http.post('/api/question-sets/:id/submit', ({ params }) => {
-    const { id } = params; // eslint-disable-line @typescript-eslint/no-unused-vars
+  rest.post('/api/question-sets/:id/submit', (req, res, ctx) => {
+    const { id } = req.params; // eslint-disable-line @typescript-eslint/no-unused-vars
 
     // Simulate successful submission
-    return HttpResponse.json({
-      submissionId: `sub_${Date.now()}`,
-      timestamp: new Date().toISOString(),
-    });
+    return res(
+      ctx.json({
+        submissionId: `sub_${Date.now()}`,
+        timestamp: new Date().toISOString(),
+      })
+    );
   }),
 ];
 
 // Error handlers for testing
 export const errorHandlers = {
   // Network error
-  networkError: http.get('/api/question-sets', () => {
-    return HttpResponse.error();
+  networkError: rest.get('/api/question-sets', (req, res, ctx) => {
+    return res(ctx.status(500), ctx.json({ message: 'Network error' }));
   }),
 
   // Timeout error (simulate slow response)
-  timeout: http.get('/api/question-sets', async () => {
+  timeout: rest.get('/api/question-sets', async (req, res, ctx) => {
     await new Promise(resolve => setTimeout(resolve, 35000)); // Longer than 30s timeout
-    return HttpResponse.json({ data: mockQuestionSets, total: mockQuestionSets.length });
+    return res(ctx.json({ data: mockQuestionSets, total: mockQuestionSets.length }));
   }),
 
   // Server error
-  serverError: http.get('/api/question-sets', () => {
-    return HttpResponse.json(
-      {
+  serverError: rest.get('/api/question-sets', (req, res, ctx) => {
+    return res(
+      ctx.status(500),
+      ctx.json({
         error: 'InternalServerError',
         message: 'Internal server error occurred',
         status: 500,
-      },
-      { status: 500 }
+      })
     );
   }),
 
   // Invalid data error
-  invalidData: http.get('/api/question-sets', () => {
-    return HttpResponse.json(
-      {
+  invalidData: rest.get('/api/question-sets', (req, res, ctx) => {
+    return res(
+      ctx.status(400),
+      ctx.json({
         error: 'ValidationError',
         message: 'Invalid request data',
         status: 400,
-      },
-      { status: 400 }
+      })
     );
   }),
 };
