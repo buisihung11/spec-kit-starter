@@ -24,11 +24,13 @@ export interface FormServiceClient {
 export class FormService implements FormServiceClient {
   private readonly baseUrl: string;
   private readonly timeoutMs = 30000; // 30 seconds
-  private readonly useMockData = true; // Toggle to switch between mock and real API
+  private readonly useMockData: boolean;
 
-  constructor() {
+  constructor(config?: { useMockData?: boolean; baseUrl?: string }) {
     // Use environment variable with fallback to '/api'
-    this.baseUrl = process.env.NX_FORM_SERVICE_URL || '/api';
+    this.baseUrl = config?.baseUrl || process.env.NX_FORM_SERVICE_URL || '/api';
+    // Default to false to allow MSW to handle requests in tests
+    this.useMockData = config?.useMockData ?? false;
   }
 
   /**
@@ -42,10 +44,15 @@ export class FormService implements FormServiceClient {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), this.timeoutMs);
 
+    // If external signal is provided, listen to it and abort our controller
+    if (signal) {
+      signal.addEventListener('abort', () => controller.abort());
+    }
+
     try {
       const response = await fetch(url, {
         ...options,
-        signal: signal || controller.signal,
+        signal: controller.signal,
         credentials: 'include', // Include auth cookies
         headers: {
           'Content-Type': 'application/json',
@@ -60,6 +67,10 @@ export class FormService implements FormServiceClient {
 
       if (error instanceof Error) {
         if (error.name === 'AbortError') {
+          // Check if it was the external signal or timeout
+          if (signal?.aborted) {
+            throw new Error('Request was aborted');
+          }
           throw new Error(`Request timeout after ${this.timeoutMs}ms`);
         }
         throw new Error(`Network error: ${error.message}`);
