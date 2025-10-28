@@ -5,11 +5,11 @@ import { server } from '../../mocks/server';
 import { rest } from 'msw';
 
 describe('QuestionSetList', () => {
-  const mockOnFormSelected = jest.fn();
+  const mockOnQuestionSetSelected = jest.fn();
   const mockOnError = jest.fn();
 
   beforeEach(() => {
-    mockOnFormSelected.mockClear();
+    mockOnQuestionSetSelected.mockClear();
     mockOnError.mockClear();
   });
 
@@ -116,8 +116,8 @@ describe('QuestionSetList', () => {
     });
   });
 
-  it('should trigger form fetch when clicking item', async () => {
-    render(<QuestionSetList onFormSelected={mockOnFormSelected} />);
+  it('should trigger callback when clicking item', async () => {
+    render(<QuestionSetList onQuestionSetSelected={mockOnQuestionSetSelected} />);
 
     await waitFor(() => {
       expect(screen.getByText('Available Question Sets')).toBeInTheDocument();
@@ -132,15 +132,15 @@ describe('QuestionSetList', () => {
     if (functionalItem) {
       fireEvent.click(functionalItem);
 
-      // Should show loading indicator
+      // Should immediately call callback with question set ID
       await waitFor(() => {
-        expect(screen.getByRole('progressbar')).toBeInTheDocument();
+        expect(mockOnQuestionSetSelected).toHaveBeenCalled();
       });
     }
   });
 
-  it('should call onFormSelected callback when form fetch succeeds', async () => {
-    render(<QuestionSetList onFormSelected={mockOnFormSelected} />);
+  it('should call onQuestionSetSelected callback with question set ID', async () => {
+    render(<QuestionSetList onQuestionSetSelected={mockOnQuestionSetSelected} />);
 
     await waitFor(() => {
       expect(screen.getByText('Available Question Sets')).toBeInTheDocument();
@@ -155,60 +155,43 @@ describe('QuestionSetList', () => {
     if (functionalItem) {
       fireEvent.click(functionalItem);
 
-      // Wait for form to be fetched
+      // Should be called with question set ID
       await waitFor(() => {
-        expect(mockOnFormSelected).toHaveBeenCalled();
-      }, { timeout: 3000 });
+        expect(mockOnQuestionSetSelected).toHaveBeenCalled();
+      });
 
-      expect(mockOnFormSelected).toHaveBeenCalledWith(
-        expect.objectContaining({
-          id: expect.any(String),
-          name: expect.any(String),
-        })
+      expect(mockOnQuestionSetSelected).toHaveBeenCalledWith(
+        expect.any(String)
       );
     }
   });
 
-  it('should call onError callback when form fetch fails', async () => {
-    // Override form fetch to fail
+  it('should call onError callback when question sets fetch fails', async () => {
+    // Override handler to return error
     server.use(
-      rest.get('/api/question-sets/:id', (req, res, ctx) => {
+      rest.get('/api/question-sets', (req, res, ctx) => {
         return res(
-          ctx.status(404),
-          ctx.json({ error: 'NotFound', message: 'Form not found', status: 404 })
+          ctx.status(500),
+          ctx.json({ error: 'ServerError', message: 'Server error', status: 500 })
         );
       })
     );
 
     render(<QuestionSetList onError={mockOnError} />);
 
+    // Wait for error to be displayed and callback to be invoked
     await waitFor(() => {
-      expect(screen.getByText('Available Question Sets')).toBeInTheDocument();
+      expect(mockOnError).toHaveBeenCalled();
     });
 
-    // Click an item
-    const items = screen.getAllByRole('button');
-    const functionalItem = items.find(item =>
-      item.textContent?.includes('Functional Question Set')
+    expect(mockOnError).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: expect.any(String),
+      })
     );
-
-    if (functionalItem) {
-      fireEvent.click(functionalItem);
-
-      // Wait for error callback
-      await waitFor(() => {
-        expect(mockOnError).toHaveBeenCalled();
-      }, { timeout: 3000 });
-
-      expect(mockOnError).toHaveBeenCalledWith(
-        expect.objectContaining({
-          message: expect.stringContaining('404'),
-        })
-      );
-    }
   });
 
-  it('should disable items while form is loading', async () => {
+  it('should not disable items when clicked', async () => {
     render(<QuestionSetList />);
 
     await waitFor(() => {
@@ -224,15 +207,9 @@ describe('QuestionSetList', () => {
     if (functionalItem) {
       fireEvent.click(functionalItem);
 
-      // During loading, items should be disabled
-      await waitFor(() => {
-        const progressBar = screen.queryByRole('progressbar');
-        if (progressBar) {
-          items.forEach(item => {
-            // Check if button is disabled or has disabled attribute
-            expect(item).toBeDisabled();
-          });
-        }
+      // Items should remain enabled since we don't fetch forms anymore
+      items.forEach(item => {
+        expect(item).not.toBeDisabled();
       });
     }
   });

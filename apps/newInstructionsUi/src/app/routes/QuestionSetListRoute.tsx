@@ -3,7 +3,6 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, Typography, Snackbar, Alert } from '@spec-kit-demo-v2/design-system';
 import { QuestionSetList } from '../../components/QuestionSetList';
-import { FormData } from '../../types/questionSet.types';
 
 /**
  * Route component for displaying the question set list
@@ -13,9 +12,10 @@ export function QuestionSetListRoute() {
   const navigate = useNavigate();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const handleFormSelected = (formData: FormData) => {
-    // Navigate to form route with state
-    navigate(`/new-instructions-ui/form/${formData.id}`, { state: { formData } });
+  const handleQuestionSetSelected = (questionSetId: string) => {
+    // Navigate to form route with the question set ID
+    // FormDisplay will handle fetching the form data
+    navigate(`/new-instructions-ui/form/${questionSetId}`);
   };
 
   const handleError = (error: Error) => {
@@ -38,7 +38,7 @@ export function QuestionSetListRoute() {
       </Box>
 
       <QuestionSetList
-        onFormSelected={handleFormSelected}
+        onQuestionSetSelected={handleQuestionSetSelected}
         onError={handleError}
       />
 

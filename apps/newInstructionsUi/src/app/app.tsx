@@ -1,10 +1,8 @@
-import * as React from 'react';
-import { useEffect } from 'react';
-import { Routes, Route } from 'react-router-dom';
 import { Container, Typography } from '@spec-kit-demo-v2/design-system';
-import { QuestionSetListRoute } from './routes/QuestionSetListRoute';
-import { FormRoute } from './routes/FormRoute';
+import { Route, Routes } from 'react-router-dom';
 import { Providers } from './providers';
+import { FormRoute } from './routes/FormRoute';
+import { QuestionSetListRoute } from './routes/QuestionSetListRoute';
 
 if (process.env.NODE_ENV === 'development') {
   const { worker } = require('../mocks/browser');

@@ -1,8 +1,7 @@
 import { Alert, Box, Snackbar, Typography } from '@spec-kit-demo-v2/design-system';
-import { useEffect } from 'react';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { FormDisplay } from '../../components/FormDisplay';
-import { useFormService } from '../../hooks/useFormService';
 import { useFormSubmission } from '../../hooks/useFormSubmission';
 import { FormData } from '../../types/questionSet.types';
 
@@ -13,22 +12,21 @@ import { FormData } from '../../types/questionSet.types';
 export function FormRoute() {
   const { formId } = useParams<{ formId: string }>();
   const navigate = useNavigate();
-  const location = useLocation();
 
-  // Use TanStack Query hooks for data fetching and mutations
-  const { formData, loading, error, fetchForm } = useFormService();
+  // Use TanStack Query hook for form submission
   const { submitForm, isSubmitting, submissionError, isSuccess, reset: resetSubmission } = useFormSubmission();
 
-  // Fetch form data on mount if we have a formId and no formData from navigation state
-  useEffect(() => {
-    const formDataFromState = location.state?.formData;
-    if (formId && !formDataFromState && !formData) {
-      fetchForm(formId);
-    }
-  }, [formId, location.state?.formData, formData, fetchForm]);
+  // State for tracking fetch errors
+  const [fetchError, setFetchError] = useState<Error | null>(null);
 
-  // Use form data from navigation state or fetched data
-  const currentFormData = location.state?.formData || formData;
+  const handleFormFetched = (formData: FormData) => {
+    // Form data successfully fetched
+    console.log('Form fetched:', formData.id);
+  };
+
+  const handleFetchError = (error: Error) => {
+    setFetchError(error);
+  };
 
   const handleFormSubmit = async (data: Record<string, unknown>) => {
     if (!formId) {
@@ -64,33 +62,9 @@ export function FormRoute() {
     resetSubmission();
   };
 
-  if (loading) {
-    return (
-      <Box sx={{ py: 4 }}>
-        <Typography variant="body1">Loading form...</Typography>
-      </Box>
-    );
-  }
-
-  if (error) {
-    return (
-      <Box sx={{ py: 4 }}>
-        <Typography variant="body1" color="error">
-          Error loading form: {error.message}
-        </Typography>
-      </Box>
-    );
-  }
-
-  if (!currentFormData) {
-    return (
-      <Box sx={{ py: 4 }}>
-        <Typography variant="body1" color="error">
-          Form not found
-        </Typography>
-      </Box>
-    );
-  }
+  const handleCloseFetchError = () => {
+    setFetchError(null);
+  };
 
   return (
     <Box>
@@ -104,9 +78,11 @@ export function FormRoute() {
       </Box>
 
       <FormDisplay
-        formData={currentFormData}
+        formId={formId}
         isLoading={isSubmitting}
         error={submissionError?.message || null}
+        onFormFetched={handleFormFetched}
+        onFetchError={handleFetchError}
         onSubmit={handleFormSubmit}
         onCancel={handleCancel}
       />
@@ -130,6 +106,17 @@ export function FormRoute() {
       >
         <Alert onClose={handleCloseSnackbar} severity="error" sx={{ width: '100%' }}>
           {submissionError?.message || 'Failed to submit form'}
+        </Alert>
+      </Snackbar>
+
+      <Snackbar
+        open={!!fetchError}
+        autoHideDuration={6000}
+        onClose={handleCloseFetchError}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert onClose={handleCloseFetchError} severity="error" sx={{ width: '100%' }}>
+          {fetchError?.message || 'Failed to load form'}
         </Alert>
       </Snackbar>
     </Box>

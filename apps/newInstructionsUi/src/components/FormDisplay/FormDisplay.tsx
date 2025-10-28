@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import {
   Box,
@@ -9,26 +9,37 @@ import {
   CircularProgress,
 } from '@spec-kit-demo-v2/design-system';
 import { FormSection } from './FormSection';
+import { useFormService } from '../../hooks/useFormService';
 import type { FormData } from '../../types/questionSet.types';
 
 /**
  * Props for the FormDisplay component
  */
 export interface FormDisplayProps {
-  /** The form data containing sections and fields */
-  formData: FormData | null;
-  /** Loading state for the form */
+  /** The form ID to fetch and display. If provided, will fetch form data automatically */
+  formId?: string;
+  /** The form data containing sections and fields. If provided, will use this instead of fetching */
+  formData?: FormData | null;
+  /** Loading state for the form submission (not for fetching) */
   isLoading?: boolean;
-  /** Error state for the form */
+  /** Error state for the form submission (not for fetching) */
   error?: string | null;
   /** Callback fired when form is submitted */
   onSubmit?: (data: Record<string, unknown>) => void;
   /** Callback fired when form is cancelled */
   onCancel?: () => void;
+  /** Callback fired when form data is successfully fetched */
+  onFormFetched?: (formData: FormData) => void;
+  /** Callback fired when form fetching fails */
+  onFetchError?: (error: Error) => void;
 }
 
 /**
  * Form display container component that renders a complete form with sections.
+ *
+ * Can operate in two modes:
+ * 1. Controlled mode: Pass formData prop directly (skips fetching)
+ * 2. Fetch mode: Pass formId prop to fetch form data automatically
  *
  * Uses React Hook Form for form state management and validation.
  * Renders loading and error states, and handles form submission.
@@ -39,6 +50,7 @@ export interface FormDisplayProps {
  *
  * @example
  * ```tsx
+ * // Controlled mode
  * <FormDisplay
  *   formData={formData}
  *   isLoading={loading}
@@ -46,15 +58,60 @@ export interface FormDisplayProps {
  *   onSubmit={handleSubmit}
  *   onCancel={handleCancel}
  * />
+ *
+ * // Fetch mode
+ * <FormDisplay
+ *   formId="123"
+ *   onFormFetched={handleFormFetched}
+ *   onFetchError={handleFetchError}
+ *   onSubmit={handleSubmit}
+ *   onCancel={handleCancel}
+ * />
  * ```
  */
 export function FormDisplay({
-  formData,
+  formId,
+  formData: formDataProp,
   isLoading = false,
   error = null,
   onSubmit,
   onCancel,
+  onFormFetched,
+  onFetchError,
 }: FormDisplayProps): React.ReactElement {
+  const {
+    formData: fetchedFormData,
+    loading: fetchLoading,
+    error: fetchError,
+    fetchForm,
+  } = useFormService();
+
+  // Fetch form data if formId is provided and no formData prop
+  useEffect(() => {
+    if (formId && !formDataProp) {
+      fetchForm(formId);
+    }
+  }, [formId, formDataProp, fetchForm]);
+
+  // Notify parent when form data is fetched
+  useEffect(() => {
+    if (fetchedFormData && onFormFetched) {
+      onFormFetched(fetchedFormData);
+    }
+  }, [fetchedFormData, onFormFetched]);
+
+  // Notify parent when fetch error occurs
+  useEffect(() => {
+    if (fetchError && onFetchError) {
+      onFetchError(fetchError);
+    }
+  }, [fetchError, onFetchError]);
+
+  // Use prop formData if provided, otherwise use fetched data
+  const formData = formDataProp || fetchedFormData;
+  const isLoadingData = fetchLoading || isLoading;
+  const displayError = error || (fetchError?.message);
+
   const methods = useForm({
     mode: 'onBlur',
   });
@@ -72,7 +129,7 @@ export function FormDisplay({
   });
 
   // Loading state
-  if (isLoading) {
+  if (isLoadingData) {
     return (
       <Box
         display="flex"
@@ -91,10 +148,10 @@ export function FormDisplay({
   }
 
   // Error state
-  if (error) {
+  if (displayError) {
     return (
       <Box p={3}>
-        <Alert severity="error">{error}</Alert>
+        <Alert severity="error">{displayError}</Alert>
       </Box>
     );
   }

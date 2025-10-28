@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Drawer, Divider } from '@spec-kit-demo-v2/design-system';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { SidebarHeader } from './SidebarHeader';
@@ -39,11 +39,20 @@ export function Sidebar({
   drawerWidth = 280,
   collapsedDrawerWidth = 74,
 }: SidebarProps) {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  // Load initial state from localStorage
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+    const stored = localStorage.getItem('sidebar-collapsed');
+    return stored ? JSON.parse(stored) : false;
+  });
   const [isHovered, setIsHovered] = useState(false);
   const [expandedMenus, setExpandedMenus] = useState<Set<string>>(new Set());
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Save collapse state to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('sidebar-collapsed', JSON.stringify(isCollapsed));
+  }, [isCollapsed]);
 
   const handleDrawerToggle = () => {
     setIsCollapsed(!isCollapsed);

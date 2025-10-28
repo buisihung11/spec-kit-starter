@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '../../test-utils';
 import { FormDisplay } from './FormDisplay';
 import type { FormData } from '../../types/questionSet.types';
 
@@ -364,6 +364,96 @@ describe('FormDisplay', () => {
 
       expect(screen.queryByRole('heading', { level: 2 })).not.toBeInTheDocument();
       expect(screen.getByLabelText(/field 1/i)).toBeInTheDocument();
+    });
+  });
+
+  describe('Fetch Mode', () => {
+    it('should fetch form data when formId is provided', async () => {
+      const mockOnFormFetched = jest.fn();
+
+      render(
+        <FormDisplay
+          formId="1"
+          onFormFetched={mockOnFormFetched}
+        />
+      );
+
+      // Should show loading initially
+      expect(screen.getByRole('progressbar')).toBeInTheDocument();
+
+      // Wait for form to load
+      await waitFor(() => {
+        expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
+      });
+
+      // Should call callback with form data
+      expect(mockOnFormFetched).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: expect.any(String),
+          name: expect.any(String),
+        })
+      );
+    });
+
+    it('should call onFetchError when form fetch fails', async () => {
+      const mockOnFetchError = jest.fn();
+
+      render(
+        <FormDisplay
+          formId="non-existent-id"
+          onFetchError={mockOnFetchError}
+        />
+      );
+
+      // Wait for error
+      await waitFor(() => {
+        expect(mockOnFetchError).toHaveBeenCalled();
+      });
+
+      expect(mockOnFetchError).toHaveBeenCalledWith(
+        expect.any(Error)
+      );
+    });
+
+    it('should prefer formData prop over formId', () => {
+      const mockFormData: FormData = {
+        id: 'form1',
+        questionSetId: 'qs1',
+        name: 'Test Form',
+        version: '1.0.0',
+        title: 'Test Title',
+        sections: [
+          {
+            id: 'section1',
+            title: 'Test Section',
+            description: 'Test section description',
+            order: 1,
+            fields: [
+              {
+                id: 'field1',
+                label: 'Test Field',
+                type: 'text',
+                required: false,
+              },
+            ],
+          },
+        ],
+        metadata: {
+          createdAt: '2025-01-01T00:00:00Z',
+          updatedAt: '2025-01-01T00:00:00Z',
+          author: 'test',
+        },
+      };
+
+      render(
+        <FormDisplay
+          formId="some-id"
+          formData={mockFormData}
+        />
+      );
+
+      // Should use formData prop, not fetch
+      expect(screen.getByText('Test Title')).toBeInTheDocument();
     });
   });
 });

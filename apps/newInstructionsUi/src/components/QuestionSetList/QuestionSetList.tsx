@@ -1,33 +1,32 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   Box,
   Typography,
   CircularProgress,
   Alert,
-  Stack,
   Button,
+  Grid,
 } from '@spec-kit-demo-v2/design-system';
 import { useQuestionSets } from '../../hooks/useQuestionSets';
-import { useFormService } from '../../hooks/useFormService';
 import { QuestionSetItem } from './QuestionSetItem';
-import type { FormData } from '../../types/questionSet.types';
 
 /**
  * Props for the QuestionSetList component
  */
 export interface QuestionSetListProps {
-  /** Callback invoked when a form is successfully selected and fetched */
-  onFormSelected?: (formData: FormData) => void;
-  /** Callback invoked when an error occurs during form fetching */
+  /** Callback invoked when a question set is selected */
+  onQuestionSetSelected?: (questionSetId: string) => void;
+  /** Callback invoked when an error occurs */
   onError?: (error: Error) => void;
 }
 
 /**
- * Container component that orchestrates the display of question sets and form retrieval.
+ * Container component that displays available question sets.
  *
- * Uses useQuestionSets hook to fetch and display available question sets,
- * and useFormService hook to fetch individual forms when selected.
+ * Uses useQuestionSets hook to fetch and display available question sets.
  * Handles all loading, error, and empty states with appropriate UI feedback.
+ * When a question set is selected, it calls the onQuestionSetSelected callback
+ * with the question set ID, allowing parent components to handle navigation or form fetching.
  *
  * @param props - Component props
  * @returns Rendered question set list with all interactive states
@@ -35,8 +34,8 @@ export interface QuestionSetListProps {
  * @example
  * ```tsx
  * <QuestionSetList
- *   onFormSelected={(formData) => {
- *     console.log('Form selected:', formData);
+ *   onQuestionSetSelected={(id) => {
+ *     navigate(`/form/${id}`);
  *   }}
  *   onError={(error) => {
  *     console.error('Error:', error);
@@ -45,57 +44,38 @@ export interface QuestionSetListProps {
  * ```
  */
 export function QuestionSetList({
-  onFormSelected,
+  onQuestionSetSelected,
   onError,
 }: QuestionSetListProps): React.ReactElement {
   const { questionSets, loading, error, refetch } = useQuestionSets();
-  const {
-    formData,
-    loading: formLoading,
-    error: formError,
-    fetchForm,
-  } = useFormService();
-
-  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   /**
    * Handles question set selection
-   * Fetches the form data and invokes callbacks based on result
+   * Invokes the callback with the selected question set ID
    */
-  const handleSelect = async (id: string) => {
-    setSelectedId(id);
-
-    try {
-      await fetchForm(id);
-
-      // Note: formData will be updated via the hook's state
-      // We need to wait for it to be available
-    } catch (err) {
-      const error = err instanceof Error ? err : new Error('Failed to fetch form');
-      if (onError) {
-        onError(error);
-      }
+  const handleSelect = (id: string) => {
+    if (onQuestionSetSelected) {
+      onQuestionSetSelected(id);
     }
   };
 
-  // Effect to handle form data updates
+  // Effect to handle errors from the hook
   React.useEffect(() => {
-    if (formData && onFormSelected) {
-      onFormSelected(formData);
+    if (error && onError) {
+      onError(error);
     }
-  }, [formData, onFormSelected]);
-
-  // Effect to handle form errors
-  React.useEffect(() => {
-    if (formError && onError) {
-      onError(formError);
-    }
-  }, [formError, onError]);
+  }, [error, onError]);
 
   // Loading state
   if (loading) {
     return (
-      <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" minHeight="200px">
+      <Box
+        display="flex"
+        flexDirection="column"
+        alignItems="center"
+        justifyContent="center"
+        minHeight="200px"
+      >
         <CircularProgress />
         <Typography variant="body1" sx={{ mt: 2 }}>
           Loading question sets...
@@ -128,7 +108,12 @@ export function QuestionSetList({
   // Empty state
   if (questionSets.length === 0) {
     return (
-      <Box display="flex" alignItems="center" justifyContent="center" minHeight="200px">
+      <Box
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+        minHeight="200px"
+      >
         <Typography variant="body1" color="text.secondary">
           No question sets available
         </Typography>
@@ -142,18 +127,25 @@ export function QuestionSetList({
       <Typography variant="h5" gutterBottom>
         Available Question Sets
       </Typography>
-      <Stack spacing={2}>
+      <Grid container spacing={2}>
         {questionSets.map((qs) => (
-          <QuestionSetItem
+          <Grid
+            size={{
+              xs: 12,
+              sm: 6,
+            }}
             key={qs.id}
-            questionSet={qs}
-            isSelected={selectedId === qs.id}
-            isLoading={formLoading && selectedId === qs.id}
-            onSelect={handleSelect}
-            disabled={formLoading}
-          />
+          >
+            <QuestionSetItem
+              questionSet={qs}
+              isSelected={false}
+              isLoading={false}
+              onSelect={handleSelect}
+              disabled={false}
+            />
+          </Grid>
         ))}
-      </Stack>
+      </Grid>
     </Box>
   );
 }
