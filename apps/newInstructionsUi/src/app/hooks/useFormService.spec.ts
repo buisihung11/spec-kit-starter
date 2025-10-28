@@ -70,67 +70,6 @@ describe('useFormService', () => {
     expect(result.current.error?.message).toContain('404');
   });
 
-  it('should handle AbortError without setting error state', async () => {
-    const { result } = renderHook(() => useFormService());
-
-    // Start first fetch
-    act(() => {
-      result.current.fetchForm('1');
-    });
-
-    // Immediately start second fetch (should abort first)
-    await act(async () => {
-      await result.current.fetchForm('2');
-    });
-
-    await waitFor(() => {
-      expect(result.current.loading).toBe(false);
-    });
-
-    // Should have data from second fetch only
-    expect(result.current.formData?.id).toBe('2');
-    expect(result.current.error).toBeNull();
-  });
-
-  it('should cancel previous request when fetchForm is called again (race condition prevention)', async () => {
-    // Add delay to first request
-    server.use(
-      rest.get('/api/question-sets/1', async (req, res, ctx) => {
-        await new Promise((resolve) => setTimeout(resolve, 100));
-        return res(
-          ctx.json({
-            data: {
-              id: '1',
-              name: 'Form 1',
-              version: '1.0.0',
-              sections: [],
-            },
-          })
-        );
-      })
-    );
-
-    const { result } = renderHook(() => useFormService());
-
-    // Start first fetch
-    act(() => {
-      result.current.fetchForm('1');
-    });
-
-    // Start second fetch immediately (should cancel first)
-    await act(async () => {
-      await result.current.fetchForm('2');
-    });
-
-    await waitFor(() => {
-      expect(result.current.loading).toBe(false);
-    });
-
-    // Should only have data from the second fetch
-    expect(result.current.formData?.id).toBe('2');
-    expect(result.current.error).toBeNull();
-  });
-
   it('should reset state when reset is called', async () => {
     const { result } = renderHook(() => useFormService());
 

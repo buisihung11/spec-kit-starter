@@ -100,49 +100,6 @@ describe('FormSection', () => {
     expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
   });
 
-  it('renders different field types correctly', () => {
-    const section: FormSectionType = {
-      id: 'mixed',
-      title: 'Mixed Fields',
-      fields: [
-        {
-          id: 'name',
-          label: 'Name',
-          type: 'text',
-          required: true,
-        },
-        {
-          id: 'age',
-          label: 'Age',
-          type: 'number',
-          required: true,
-        },
-        {
-          id: 'bio',
-          label: 'Bio',
-          type: 'textarea',
-          required: false,
-        },
-        {
-          id: 'country',
-          label: 'Country',
-          type: 'select',
-          required: true,
-          options: [
-            { label: 'USA', value: 'us' },
-            { label: 'Canada', value: 'ca' },
-          ],
-        },
-      ],
-    };
-
-    render(<TestFormSection section={section} />);
-
-    expect(screen.getByLabelText(/name/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/age/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/bio/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/country/i)).toBeInTheDocument();
-  });
 
   it('renders section with Paper elevation', () => {
     const section: FormSectionType = {

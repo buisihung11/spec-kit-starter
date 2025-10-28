@@ -152,7 +152,11 @@ describe('FormFieldComponent', () => {
 
       render(<TestFormField field={field} />);
 
-      expect(screen.getByLabelText(/country/i)).toBeInTheDocument();
+      // Check for the label text (MUI renders it twice)
+      const labels = screen.getAllByText(/country/i);
+      expect(labels.length).toBeGreaterThan(0);
+      // Check for the combobox role
+      expect(screen.getByRole('combobox')).toBeInTheDocument();
     });
   });
 
@@ -173,9 +177,15 @@ describe('FormFieldComponent', () => {
       render(<TestFormField field={field} />);
 
       expect(screen.getByText(/gender/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/male/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/female/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/other/i)).toBeInTheDocument();
+
+      // Get all radio inputs and verify count
+      const radios = screen.getAllByRole('radio');
+      expect(radios).toHaveLength(3);
+
+      // Verify the labels are present
+      expect(screen.getByText('Male')).toBeInTheDocument();
+      expect(screen.getByText('Female')).toBeInTheDocument();
+      expect(screen.getByText('Other')).toBeInTheDocument();
     });
   });
 

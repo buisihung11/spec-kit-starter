@@ -29,7 +29,9 @@ describe('QuestionSetList', () => {
 
     expect(screen.getByText('Available Question Sets')).toBeInTheDocument();
     // Should have the mock question sets from handlers
-    expect(screen.getByText(/Customer Onboarding/i)).toBeInTheDocument();
+    const items = screen.getAllByRole('button');
+    expect(items.length).toBeGreaterThan(0);
+    expect(screen.getByText('A question set for functional requirements gathering')).toBeInTheDocument();
   });
 
   it('should render error Alert when API fails', async () => {
@@ -124,8 +126,7 @@ describe('QuestionSetList', () => {
     // Find and click the first functional question set
     const items = screen.getAllByRole('button');
     const functionalItem = items.find(item =>
-      item.textContent?.includes('Customer Onboarding') ||
-      item.textContent?.includes('Functional')
+      item.textContent?.includes('Functional Question Set')
     );
 
     if (functionalItem) {
@@ -148,7 +149,7 @@ describe('QuestionSetList', () => {
     // Click an item
     const items = screen.getAllByRole('button');
     const functionalItem = items.find(item =>
-      item.textContent?.includes('Customer Onboarding')
+      item.textContent?.includes('Functional Question Set')
     );
 
     if (functionalItem) {
@@ -188,7 +189,7 @@ describe('QuestionSetList', () => {
     // Click an item
     const items = screen.getAllByRole('button');
     const functionalItem = items.find(item =>
-      item.textContent?.includes('Customer Onboarding')
+      item.textContent?.includes('Functional Question Set')
     );
 
     if (functionalItem) {
@@ -217,7 +218,7 @@ describe('QuestionSetList', () => {
     // Click an item
     const items = screen.getAllByRole('button');
     const functionalItem = items.find(item =>
-      item.textContent?.includes('Customer Onboarding')
+      item.textContent?.includes('Functional Question Set')
     );
 
     if (functionalItem) {

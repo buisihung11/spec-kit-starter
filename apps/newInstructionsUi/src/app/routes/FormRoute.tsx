@@ -15,6 +15,8 @@ export function FormRoute() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  console.log('Location state:', location.state);
+
   const [formData, setFormData] = useState<FormData | null>(
     location.state?.formData || null
   );

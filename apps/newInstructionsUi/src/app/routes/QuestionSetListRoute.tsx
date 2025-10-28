@@ -15,7 +15,7 @@ export function QuestionSetListRoute() {
 
   const handleFormSelected = (formData: FormData) => {
     // Navigate to form route with state
-    navigate(`/form/${formData.id}`, { state: { formData } });
+    navigate(`/new-instructions-ui/form/${formData.id}`, { state: { formData } });
   };
 
   const handleError = (error: Error) => {

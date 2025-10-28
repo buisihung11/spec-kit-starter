@@ -112,7 +112,7 @@ describe('QuestionSetItem', () => {
     );
 
     const button = screen.getByRole('button');
-    expect(button).toBeDisabled();
+    expect(button).toHaveAttribute('aria-disabled', 'true');
   });
 
   it('should be disabled when isFunctional=false', () => {
@@ -132,7 +132,7 @@ describe('QuestionSetItem', () => {
     );
 
     const button = screen.getByRole('button');
-    expect(button).toBeDisabled();
+    expect(button).toHaveAttribute('aria-disabled', 'true');
   });
 
   it('should show selected visual state when isSelected=true', () => {

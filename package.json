@@ -81,8 +81,6 @@
     "styled-components": "5.3.6"
   },
   "msw": {
-    "workerDirectory": [
-      "apps/shell/src"
-    ]
+    "workerDirectory": "apps/newInstructionsUi/src"
   }
 }

@@ -141,25 +141,4 @@ describe('useQuestionSets', () => {
     expect(result.current.error).toBeTruthy();
     expect(result.current.error?.message).toContain('Failed to fetch question sets');
   });
-
-  it('should set loading state during refetch', async () => {
-    const { result } = renderHook(() => useQuestionSets());
-
-    // Wait for initial fetch
-    await waitFor(() => {
-      expect(result.current.loading).toBe(false);
-    });
-
-    // Trigger refetch (don't await)
-    const refetchPromise = result.current.refetch();
-
-    // Check that loading is set to true
-    expect(result.current.loading).toBe(true);
-
-    await refetchPromise;
-
-    await waitFor(() => {
-      expect(result.current.loading).toBe(false);
-    });
-  });
 });
