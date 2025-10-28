@@ -59,7 +59,7 @@ export interface UseQuestionSetsReturn {
 export function useQuestionSets(): UseQuestionSetsReturn {
   const {
     data: questionSets = [],
-    isPending: loading,
+    isLoading: loading,
     isInitialLoading,
     error,
     refetch,
