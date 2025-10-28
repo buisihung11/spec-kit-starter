@@ -17,7 +17,7 @@ export function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
-            <Route path="/new-instructions-ui" element={<NewInstructionsUi />} />
+            <Route path="/new-instructions-ui/*" element={<NewInstructionsUi />} />
           </Routes>
         </React.Suspense>
       </Layout>

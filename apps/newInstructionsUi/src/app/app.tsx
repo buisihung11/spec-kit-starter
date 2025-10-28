@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
-import { Container } from '@spec-kit-demo-v2/design-system';
+import { Container, Typography } from '@spec-kit-demo-v2/design-system';
 import { QuestionSetListRoute } from './routes/QuestionSetListRoute';
 import { FormRoute } from './routes/FormRoute';
 
@@ -18,10 +18,17 @@ export function App() {
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <Routes>
-        <Route path="">
-          <Route index element={<QuestionSetListRoute />} />
-          <Route path="form/:formId" element={<FormRoute />} />
-        </Route>
+        <Route index element={<QuestionSetListRoute />} />
+        <Route path="form/:formId" element={<FormRoute />} />
+        <Route
+          path="*"
+          element={
+            <Typography variant="h5" color="error">
+              {' '}
+              404 - Page Not Found
+            </Typography>
+          }
+        />
       </Routes>
     </Container>
   );
