@@ -2,8 +2,8 @@ import * as React from 'react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, Typography, Snackbar, Alert } from '@spec-kit-demo-v2/design-system';
-import { QuestionSetList } from '../components/QuestionSetList';
-import { FormData } from '../types/questionSet.types';
+import { QuestionSetList } from '../../components/QuestionSetList';
+import { FormData } from '../../types/questionSet.types';
 
 /**
  * Route component for displaying the question set list

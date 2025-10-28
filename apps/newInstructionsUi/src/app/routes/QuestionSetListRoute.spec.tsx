@@ -3,7 +3,7 @@ import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import '@testing-library/jest-dom';
 import { QuestionSetListRoute } from './QuestionSetListRoute';
-import { server } from '../mocks/server';
+import { server } from '../../mocks/server';
 import { rest } from 'msw';
 
 // Mock the useNavigate hook
@@ -57,7 +57,7 @@ describe('QuestionSetListRoute', () => {
 
     // Find and click a question set item
     const items = screen.getAllByRole('button');
-    const functionalItem = items.find(item =>
+    const functionalItem = items.find((item) =>
       item.textContent?.includes('Customer Onboarding')
     );
 
@@ -65,9 +65,12 @@ describe('QuestionSetListRoute', () => {
       fireEvent.click(functionalItem);
 
       // Wait for navigation to be called
-      await waitFor(() => {
-        expect(mockNavigate).toHaveBeenCalled();
-      }, { timeout: 3000 });
+      await waitFor(
+        () => {
+          expect(mockNavigate).toHaveBeenCalled();
+        },
+        { timeout: 3000 }
+      );
 
       // Verify navigation parameters
       const navigationCall = mockNavigate.mock.calls[0];
@@ -91,7 +94,11 @@ describe('QuestionSetListRoute', () => {
       rest.get('/api/question-sets/:id', (req, res, ctx) => {
         return res(
           ctx.status(404),
-          ctx.json({ error: 'NotFound', message: 'Form not found', status: 404 })
+          ctx.json({
+            error: 'NotFound',
+            message: 'Form not found',
+            status: 404,
+          })
         );
       })
     );
@@ -105,7 +112,7 @@ describe('QuestionSetListRoute', () => {
 
     // Click a question set item
     const items = screen.getAllByRole('button');
-    const functionalItem = items.find(item =>
+    const functionalItem = items.find((item) =>
       item.textContent?.includes('Customer Onboarding')
     );
 
@@ -113,9 +120,12 @@ describe('QuestionSetListRoute', () => {
       fireEvent.click(functionalItem);
 
       // Wait for error Snackbar to appear
-      await waitFor(() => {
-        expect(screen.getByRole('alert')).toBeInTheDocument();
-      }, { timeout: 3000 });
+      await waitFor(
+        () => {
+          expect(screen.getByRole('alert')).toBeInTheDocument();
+        },
+        { timeout: 3000 }
+      );
 
       // Verify error message content
       const alert = screen.getByRole('alert');
@@ -129,7 +139,11 @@ describe('QuestionSetListRoute', () => {
       rest.get('/api/question-sets/:id', (req, res, ctx) => {
         return res(
           ctx.status(500),
-          ctx.json({ error: 'ServerError', message: 'Server error', status: 500 })
+          ctx.json({
+            error: 'ServerError',
+            message: 'Server error',
+            status: 500,
+          })
         );
       })
     );
@@ -143,7 +157,7 @@ describe('QuestionSetListRoute', () => {
 
     // Click a question set item to trigger error
     const items = screen.getAllByRole('button');
-    const functionalItem = items.find(item =>
+    const functionalItem = items.find((item) =>
       item.textContent?.includes('Customer Onboarding')
     );
 
@@ -151,9 +165,12 @@ describe('QuestionSetListRoute', () => {
       fireEvent.click(functionalItem);
 
       // Wait for error Snackbar to appear
-      await waitFor(() => {
-        expect(screen.getByRole('alert')).toBeInTheDocument();
-      }, { timeout: 3000 });
+      await waitFor(
+        () => {
+          expect(screen.getByRole('alert')).toBeInTheDocument();
+        },
+        { timeout: 3000 }
+      );
 
       // Find and click close button
       const closeButton = screen.getByRole('button', { name: /close/i });
@@ -172,7 +189,11 @@ describe('QuestionSetListRoute', () => {
       rest.get('/api/question-sets/:id', (req, res, ctx) => {
         return res(
           ctx.status(500),
-          ctx.json({ error: 'ServerError', message: 'Server error', status: 500 })
+          ctx.json({
+            error: 'ServerError',
+            message: 'Server error',
+            status: 500,
+          })
         );
       })
     );
@@ -186,7 +207,7 @@ describe('QuestionSetListRoute', () => {
 
     // Click a question set item
     const items = screen.getAllByRole('button');
-    const functionalItem = items.find(item =>
+    const functionalItem = items.find((item) =>
       item.textContent?.includes('Customer Onboarding')
     );
 
@@ -194,9 +215,12 @@ describe('QuestionSetListRoute', () => {
       fireEvent.click(functionalItem);
 
       // Wait for error to appear
-      await waitFor(() => {
-        expect(screen.getByRole('alert')).toBeInTheDocument();
-      }, { timeout: 3000 });
+      await waitFor(
+        () => {
+          expect(screen.getByRole('alert')).toBeInTheDocument();
+        },
+        { timeout: 3000 }
+      );
 
       // Verify navigate was NOT called
       expect(mockNavigate).not.toHaveBeenCalled();

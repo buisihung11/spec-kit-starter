@@ -115,7 +115,7 @@ export const mockFormData: FormData = {
 // Success handlers
 export const handlers = [
   // GET /api/question-sets
-  rest.get('http://localhost:4200/api/question-sets', (req, res, ctx) => {
+  rest.get('/api/question-sets', (req, res, ctx) => {
     return res(
       ctx.json({
         data: mockQuestionSets,

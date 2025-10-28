@@ -1,6 +1,6 @@
 import '@testing-library/jest-dom';
 import 'whatwg-fetch'; // Polyfill for fetch APIs
-import { server } from './src/app/mocks/server';
+import { server } from './src/mocks/server';
 
 // MSW requires these globals to be available
 import { TextEncoder, TextDecoder } from 'util';

@@ -1,10 +1,9 @@
-import * as React from 'react';
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { Box, Typography, Snackbar, Alert } from '@spec-kit-demo-v2/design-system';
-import { FormDisplay } from '../components/FormDisplay';
-import { FormData } from '../types/questionSet.types';
-import { formService } from '../services/formService';
+import { Alert, Box, Snackbar, Typography } from '@spec-kit-demo-v2/design-system';
+import { useEffect, useState } from 'react';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { FormDisplay } from '../../components/FormDisplay';
+import { formService } from '../../services/formService';
+import { FormData } from '../../types/questionSet.types';
 
 /**
  * Route component for displaying and submitting a form

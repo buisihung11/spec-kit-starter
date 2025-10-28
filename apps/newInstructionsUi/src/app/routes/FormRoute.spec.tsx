@@ -3,21 +3,36 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import '@testing-library/jest-dom';
 import { FormRoute } from './FormRoute';
 
-// Mock the useNavigate hook
-const mockNavigate = jest.fn();
-jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'),
-  useNavigate: () => mockNavigate,
-}));
-
 // Mock form service
-jest.mock('../services/formService', () => ({
+jest.mock('../../services/formService', () => ({
   formService: {
     getFormById: jest.fn().mockResolvedValue({
       id: '1',
-      title: 'Test Form',
-      description: 'Test Description',
-      fields: [],
+      name: 'Test Form',
+      version: '1.0.0',
+      questionSetId: '1',
+      sections: [
+        {
+          id: 'section-1',
+          title: 'Test Section',
+          description: 'Test section description',
+          order: 1,
+          fields: [
+            {
+              id: 'field-1',
+              type: 'text',
+              label: 'Test Field',
+              required: true,
+              placeholder: 'Enter test value',
+            },
+          ],
+        },
+      ],
+      metadata: {
+        createdAt: '2024-01-01T00:00:00Z',
+        updatedAt: '2024-01-01T00:00:00Z',
+        author: 'Test Author',
+      },
     }),
     submitFormData: jest.fn().mockResolvedValue({
       submissionId: 'sub_123',
@@ -41,7 +56,6 @@ function renderWithRouter(formId = '1', state = {}) {
 
 describe('FormRoute', () => {
   beforeEach(() => {
-    mockNavigate.mockClear();
     jest.clearAllMocks();
   });
 
