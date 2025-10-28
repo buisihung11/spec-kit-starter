@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { formService } from '../services/formService';
 import { QuestionSet } from '../types/questionSet.types';
 
@@ -21,14 +21,22 @@ export interface UseQuestionSetsReturn {
   /**
    * Function to manually trigger a refetch of question sets
    */
-  refetch: () => Promise<void>;
+  refetch: () => Promise<{ data: QuestionSet[] | undefined }>;
+  /**
+   * Whether the data is stale and will be refetched on next interaction
+   */
+  isStale: boolean;
+  /**
+   * Whether this is the first time the query is loading
+   */
+  isInitialLoading: boolean;
 }
 
 /**
- * Custom hook for fetching and managing question sets data.
+ * Custom hook for fetching and managing question sets data using TanStack Query.
  *
- * Automatically fetches question sets on mount and provides a refetch function
- * for manual refreshing. Manages loading and error states.
+ * Automatically fetches question sets on mount with caching, background refetching,
+ * and error handling provided by TanStack Query.
  *
  * @returns {UseQuestionSetsReturn} Object containing question sets data, loading state, error, and refetch function
  *
@@ -38,7 +46,7 @@ export interface UseQuestionSetsReturn {
  *   const { questionSets, loading, error, refetch } = useQuestionSets();
  *
  *   if (loading) return <div>Loading...</div>;
- *   if (error) return <div>Error: {error.message} <button onClick={refetch}>Retry</button></div>;
+ *   if (error) return <div>Error: {error.message} <button onClick={() => refetch()}>Retry</button></div>;
  *
  *   return (
  *     <ul>
@@ -49,47 +57,26 @@ export interface UseQuestionSetsReturn {
  * ```
  */
 export function useQuestionSets(): UseQuestionSetsReturn {
-  const [state, setState] = useState<{
-    questionSets: QuestionSet[];
-    loading: boolean;
-    error: Error | null;
-  }>({
-    questionSets: [],
-    loading: true,
-    error: null,
+  const {
+    data: questionSets = [],
+    isPending: loading,
+    isInitialLoading,
+    error,
+    refetch,
+    isStale,
+  } = useQuery({
+    queryKey: ['questionSets'],
+    queryFn: () => formService.getQuestionSets(),
+    // Keep previous data while fetching new data
+    placeholderData: (previousData) => previousData,
   });
 
-  /**
-   * Fetches question sets from the API and updates state
-   */
-  const fetchQuestionSets = useCallback(async () => {
-    setState((prev) => ({ ...prev, loading: true, error: null }));
-
-    try {
-      const data = await formService.getQuestionSets();
-      setState({
-        questionSets: data,
-        loading: false,
-        error: null,
-      });
-    } catch (err) {
-      setState({
-        questionSets: [],
-        loading: false,
-        error: err instanceof Error ? err : new Error('Failed to fetch question sets'),
-      });
-    }
-  }, []);
-
-  // Fetch question sets on mount
-  useEffect(() => {
-    fetchQuestionSets();
-  }, [fetchQuestionSets]);
-
   return {
-    questionSets: state.questionSets,
-    loading: state.loading,
-    error: state.error,
-    refetch: fetchQuestionSets,
+    questionSets,
+    loading,
+    error,
+    refetch,
+    isStale,
+    isInitialLoading,
   };
 }

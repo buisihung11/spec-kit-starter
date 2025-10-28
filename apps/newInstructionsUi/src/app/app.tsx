@@ -4,6 +4,7 @@ import { Routes, Route } from 'react-router-dom';
 import { Container, Typography } from '@spec-kit-demo-v2/design-system';
 import { QuestionSetListRoute } from './routes/QuestionSetListRoute';
 import { FormRoute } from './routes/FormRoute';
+import { Providers } from './providers';
 
 if (process.env.NODE_ENV === 'development') {
   const { worker } = require('../mocks/browser');
@@ -16,21 +17,23 @@ if (process.env.NODE_ENV === 'development') {
  */
 export function App() {
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Routes>
-        <Route index element={<QuestionSetListRoute />} />
-        <Route path="form/:formId" element={<FormRoute />} />
-        <Route
-          path="*"
-          element={
-            <Typography variant="h5" color="error">
-              {' '}
-              404 - Page Not Found
-            </Typography>
-          }
-        />
-      </Routes>
-    </Container>
+    <Providers>
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Routes>
+          <Route index element={<QuestionSetListRoute />} />
+          <Route path="form/:formId" element={<FormRoute />} />
+          <Route
+            path="*"
+            element={
+              <Typography variant="h5" color="error">
+                {' '}
+                404 - Page Not Found
+              </Typography>
+            }
+          />
+        </Routes>
+      </Container>
+    </Providers>
   );
 }
 

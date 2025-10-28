@@ -3,15 +3,18 @@ import * as ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 
 import App from './app/app';
+import { Providers } from './app/providers';
 
-// Render the app with React Router
+// Render the app with React Router and Query Client
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
 root.render(
   <StrictMode>
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
+    <Providers>
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    </Providers>
   </StrictMode>
 );

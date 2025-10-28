@@ -1,8 +1,9 @@
 import { Alert, Box, Snackbar, Typography } from '@spec-kit-demo-v2/design-system';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { FormDisplay } from '../../components/FormDisplay';
-import { formService } from '../../services/formService';
+import { useFormService } from '../../hooks/useFormService';
+import { useFormSubmission } from '../../hooks/useFormSubmission';
 import { FormData } from '../../types/questionSet.types';
 
 /**
@@ -14,75 +15,53 @@ export function FormRoute() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  console.log('Location state:', location.state);
+  // Use TanStack Query hooks for data fetching and mutations
+  const { formData, loading, error, fetchForm } = useFormService();
+  const { submitForm, isSubmitting, submissionError, isSuccess, reset: resetSubmission } = useFormSubmission();
 
-  const [formData, setFormData] = useState<FormData | null>(
-    location.state?.formData || null
-  );
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [loading, setLoading] = useState(!formData);
-
-  // Fetch form data if not passed via navigation state
+  // Fetch form data on mount if we have a formId and no formData from navigation state
   useEffect(() => {
-    async function fetchFormData() {
-      if (!formId || formData) return;
-
-      const abortController = new AbortController();
-
-      try {
-        setLoading(true);
-        const data = await formService.getFormById(formId, abortController.signal);
-        setFormData(data);
-      } catch (error) {
-        if (error instanceof Error && error.name === 'AbortError') {
-          return;
-        }
-        setErrorMessage(
-          error instanceof Error ? error.message : 'Failed to load form data'
-        );
-      } finally {
-        setLoading(false);
-      }
-
-      return () => {
-        abortController.abort();
-      };
+    const formDataFromState = location.state?.formData;
+    if (formId && !formDataFromState && !formData) {
+      fetchForm(formId);
     }
+  }, [formId, location.state?.formData, formData, fetchForm]);
 
-    fetchFormData();
-  }, [formId, formData]);
+  // Use form data from navigation state or fetched data
+  const currentFormData = location.state?.formData || formData;
 
   const handleFormSubmit = async (data: Record<string, unknown>) => {
     if (!formId) {
-      setErrorMessage('No form ID provided');
+      console.error('No form ID provided');
       return;
     }
 
     try {
-      const response = await formService.submitFormData(formId, data);
-      setSuccessMessage(
-        `Form submitted successfully! Submission ID: ${response.submissionId}`
-      );
-
-      // Navigate back to list after a short delay
-      setTimeout(() => {
-        navigate('/');
-      }, 2000);
+      await submitForm(formId, data);
+      // Navigation will be handled by useEffect watching isSuccess
     } catch (error) {
-      setErrorMessage(
-        error instanceof Error ? error.message : 'Failed to submit form'
-      );
+      // Error is handled by the hook
+      console.error('Form submission failed:', error);
     }
   };
+
+  // Handle successful submission
+  useEffect(() => {
+    if (isSuccess) {
+      // Navigate back to list after successful submission
+      const timer = setTimeout(() => {
+        navigate('/');
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [isSuccess, navigate]);
 
   const handleCancel = () => {
     navigate('/');
   };
 
   const handleCloseSnackbar = () => {
-    setSuccessMessage(null);
-    setErrorMessage(null);
+    resetSubmission();
   };
 
   if (loading) {
@@ -93,7 +72,17 @@ export function FormRoute() {
     );
   }
 
-  if (!formData) {
+  if (error) {
+    return (
+      <Box sx={{ py: 4 }}>
+        <Typography variant="body1" color="error">
+          Error loading form: {error.message}
+        </Typography>
+      </Box>
+    );
+  }
+
+  if (!currentFormData) {
     return (
       <Box sx={{ py: 4 }}>
         <Typography variant="body1" color="error">
@@ -115,30 +104,32 @@ export function FormRoute() {
       </Box>
 
       <FormDisplay
-        formData={formData}
+        formData={currentFormData}
+        isLoading={isSubmitting}
+        error={submissionError?.message || null}
         onSubmit={handleFormSubmit}
         onCancel={handleCancel}
       />
 
       <Snackbar
-        open={!!successMessage}
+        open={isSuccess}
         autoHideDuration={6000}
         onClose={handleCloseSnackbar}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
         <Alert onClose={handleCloseSnackbar} severity="success" sx={{ width: '100%' }}>
-          {successMessage}
+          Form submitted successfully! Redirecting...
         </Alert>
       </Snackbar>
 
       <Snackbar
-        open={!!errorMessage}
+        open={!!submissionError}
         autoHideDuration={6000}
         onClose={handleCloseSnackbar}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
         <Alert onClose={handleCloseSnackbar} severity="error" sx={{ width: '100%' }}>
-          {errorMessage}
+          {submissionError?.message || 'Failed to submit form'}
         </Alert>
       </Snackbar>
     </Box>

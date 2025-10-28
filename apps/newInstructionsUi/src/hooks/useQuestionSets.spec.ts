@@ -1,4 +1,4 @@
-import { renderHook, waitFor } from '@testing-library/react';
+import { renderHook, waitFor } from '../../test-utils';
 import { useQuestionSets } from './useQuestionSets';
 import { server } from '../mocks/server';
 import { rest } from 'msw';

@@ -1,6 +1,6 @@
 import React from 'react';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { render, screen, waitFor, fireEvent } from '../../test-utils';
+import { BrowserRouter } from 'react-router-dom';
 import '@testing-library/jest-dom';
 import { QuestionSetListRoute } from './QuestionSetListRoute';
 import { server } from '../../mocks/server';
@@ -13,25 +13,26 @@ jest.mock('react-router-dom', () => ({
   useNavigate: () => mockNavigate,
 }));
 
-/**
- * Helper function to render route with routing context
- */
-function renderWithRouter(component: React.ReactElement) {
-  return render(<MemoryRouter>{component}</MemoryRouter>);
-}
-
 describe('QuestionSetListRoute', () => {
   beforeEach(() => {
     mockNavigate.mockClear();
   });
 
   it('should render successfully', () => {
-    const { container } = renderWithRouter(<QuestionSetListRoute />);
+    const { container } = render(
+      <BrowserRouter>
+        <QuestionSetListRoute />
+      </BrowserRouter>
+    );
     expect(container).toBeTruthy();
   });
 
   it('should render the page title and description', () => {
-    renderWithRouter(<QuestionSetListRoute />);
+    render(
+      <BrowserRouter>
+        <QuestionSetListRoute />
+      </BrowserRouter>
+    );
     expect(screen.getByText('Question Set Management')).toBeInTheDocument();
     expect(
       screen.getByText('Select a question set to view and fill out the form')
@@ -39,7 +40,11 @@ describe('QuestionSetListRoute', () => {
   });
 
   it('should render the QuestionSetList component', async () => {
-    renderWithRouter(<QuestionSetListRoute />);
+    render(
+      <BrowserRouter>
+        <QuestionSetListRoute />
+      </BrowserRouter>
+    );
 
     // Wait for the list to load
     await waitFor(() => {
@@ -48,7 +53,11 @@ describe('QuestionSetListRoute', () => {
   });
 
   it('should navigate to form route when form is selected', async () => {
-    renderWithRouter(<QuestionSetListRoute />);
+    render(
+      <BrowserRouter>
+        <QuestionSetListRoute />
+      </BrowserRouter>
+    );
 
     // Wait for question sets to load
     await waitFor(() => {
@@ -103,7 +112,11 @@ describe('QuestionSetListRoute', () => {
       })
     );
 
-    renderWithRouter(<QuestionSetListRoute />);
+    render(
+      <BrowserRouter>
+        <QuestionSetListRoute />
+      </BrowserRouter>
+    );
 
     // Wait for question sets to load
     await waitFor(() => {
@@ -148,7 +161,11 @@ describe('QuestionSetListRoute', () => {
       })
     );
 
-    renderWithRouter(<QuestionSetListRoute />);
+    render(
+      <BrowserRouter>
+        <QuestionSetListRoute />
+      </BrowserRouter>
+    );
 
     // Wait for question sets to load
     await waitFor(() => {
@@ -198,7 +215,11 @@ describe('QuestionSetListRoute', () => {
       })
     );
 
-    renderWithRouter(<QuestionSetListRoute />);
+    render(
+      <BrowserRouter>
+        <QuestionSetListRoute />
+      </BrowserRouter>
+    );
 
     // Wait for question sets to load
     await waitFor(() => {
@@ -228,7 +249,11 @@ describe('QuestionSetListRoute', () => {
   });
 
   it('should handle component unmount gracefully', () => {
-    const { unmount } = renderWithRouter(<QuestionSetListRoute />);
+    const { unmount } = render(
+      <BrowserRouter>
+        <QuestionSetListRoute />
+      </BrowserRouter>
+    );
 
     // Should not throw error on unmount
     expect(() => unmount()).not.toThrow();

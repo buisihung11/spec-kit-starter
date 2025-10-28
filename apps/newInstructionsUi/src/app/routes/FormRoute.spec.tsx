@@ -1,5 +1,5 @@
-import { render, screen, waitFor } from '@testing-library/react';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { render, screen, waitFor } from '../../test-utils';
+import { BrowserRouter } from 'react-router-dom';
 import '@testing-library/jest-dom';
 import { FormRoute } from './FormRoute';
 
@@ -41,16 +41,28 @@ jest.mock('../../services/formService', () => ({
   },
 }));
 
+// Mock react-router-dom hooks
+const mockNavigate = jest.fn();
+const mockUseParams = jest.fn();
+const mockUseLocation = jest.fn();
+
+jest.mock('react-router-dom', () => ({
+  ...jest.requireActual('react-router-dom'),
+  useNavigate: () => mockNavigate,
+  useParams: () => mockUseParams(),
+  useLocation: () => mockUseLocation(),
+}));
+
 /**
- * Helper function to render route with routing context and params
+ * Helper function to render route with mocked routing context
  */
 function renderWithRouter(formId = '1', state = {}) {
+  mockUseParams.mockReturnValue({ formId });
+  mockUseLocation.mockReturnValue({ state });
   return render(
-    <MemoryRouter initialEntries={[{ pathname: `/form/${formId}`, state }]}>
-      <Routes>
-        <Route path="/form/:formId" element={<FormRoute />} />
-      </Routes>
-    </MemoryRouter>
+    <BrowserRouter>
+      <FormRoute />
+    </BrowserRouter>
   );
 }
 

@@ -1,16 +1,36 @@
 import { render, screen } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { BrowserRouter } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import '@testing-library/jest-dom';
 import App from './app';
+
+// Create a test QueryClient
+const createTestQueryClient = () =>
+  new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+        gcTime: 0,
+        staleTime: 0,
+      },
+      mutations: {
+        retry: false,
+      },
+    },
+  });
 
 /**
  * Helper function to render App with routing context
  */
 function renderWithRouter(initialRoute = '/') {
+  const queryClient = createTestQueryClient();
+
   return render(
-    <MemoryRouter initialEntries={[initialRoute]}>
-      <App />
-    </MemoryRouter>
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    </QueryClientProvider>
   );
 }
 

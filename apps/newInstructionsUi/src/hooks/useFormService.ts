@@ -1,4 +1,5 @@
-import { useState, useCallback, useRef } from 'react';
+import React from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { formService } from '../services/formService';
 import { FormData } from '../types/questionSet.types';
 
@@ -20,13 +21,21 @@ export interface UseFormServiceReturn {
   error: Error | null;
   /**
    * Function to fetch a specific form by its question set ID
-   * Cancels any previous in-flight requests
+   * This will trigger the query to execute
    */
-  fetchForm: (questionSetId: string) => Promise<void>;
+  fetchForm: (questionSetId: string) => void;
   /**
-   * Function to reset the hook state and abort any ongoing requests
+   * Function to reset the hook state and clear the current form data
    */
   reset: () => void;
+  /**
+   * Whether the data is stale and will be refetched on next interaction
+   */
+  isStale: boolean;
+  /**
+   * Whether this is the first time the query is loading
+   */
+  isInitialLoading: boolean;
 }
 
 /**
@@ -60,86 +69,48 @@ export interface UseFormServiceReturn {
  * ```
  */
 export function useFormService(): UseFormServiceReturn {
-  const [state, setState] = useState<{
-    formData: FormData | null;
-    loading: boolean;
-    error: Error | null;
-  }>({
-    formData: null,
-    loading: false,
-    error: null,
-  });
+  const [questionSetId, setQuestionSetId] = React.useState<string | null>(null);
 
-  // Track the current abort controller to cancel ongoing requests
-  const abortControllerRef = useRef<AbortController | null>(null);
+  const {
+    data: formData = null,
+    isFetching: loading,
+    isInitialLoading,
+    error,
+    isStale,
+  } = useQuery({
+    queryKey: ['form', questionSetId],
+    queryFn: ({ queryKey }) => {
+      const [, id] = queryKey;
+      if (!id) throw new Error('Question set ID is required');
+      return formService.getFormById(id);
+    },
+    enabled: !!questionSetId,
+    // Keep previous data while fetching new data
+    placeholderData: (previousData) => previousData,
+  });
 
   /**
    * Fetches form data by question set ID
-   * Aborts any previous in-flight request to prevent race conditions
+   * This enables the query and triggers data fetching
    */
-  const fetchForm = useCallback(async (questionSetId: string) => {
-    // Abort previous request if it exists
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
-
-    // Create new AbortController for this request
-    const controller = new AbortController();
-    abortControllerRef.current = controller;
-
-    setState((prev) => ({ ...prev, loading: true, error: null }));
-
-    try {
-      const data = await formService.getFormById(questionSetId, controller.signal);
-
-      // Only update state if this request wasn't aborted
-      if (!controller.signal.aborted) {
-        setState({
-          formData: data,
-          loading: false,
-          error: null,
-        });
-      }
-    } catch (err) {
-      // Don't set error state if the request was aborted (intentional cancellation)
-      if (err instanceof Error && err.name === 'AbortError') {
-        // Request was cancelled, don't update error state
-        return;
-      }
-
-      // Only update error state if this request wasn't aborted
-      if (!controller.signal.aborted) {
-        setState({
-          formData: null,
-          loading: false,
-          error: err instanceof Error ? err : new Error('Failed to fetch form data'),
-        });
-      }
-    }
+  const fetchForm = React.useCallback((id: string) => {
+    setQuestionSetId(id);
   }, []);
 
   /**
-   * Resets the hook state to initial values and aborts any ongoing request
+   * Resets the hook state to clear current form data and disable the query
    */
-  const reset = useCallback(() => {
-    // Abort ongoing request if it exists
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-      abortControllerRef.current = null;
-    }
-
-    setState({
-      formData: null,
-      loading: false,
-      error: null,
-    });
+  const reset = React.useCallback(() => {
+    setQuestionSetId(null);
   }, []);
 
   return {
-    formData: state.formData,
-    loading: state.loading,
-    error: state.error,
+    formData,
+    loading,
+    error,
     fetchForm,
     reset,
+    isStale,
+    isInitialLoading,
   };
 }
