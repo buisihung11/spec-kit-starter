@@ -1,11 +1,31 @@
-import { renderHook, waitFor } from '../../test-utils';
+import { renderHook, waitFor } from '@testing-library/react';
 import { useQuestionSets } from './useQuestionSets';
 import { server } from '../mocks/server';
 import { rest } from 'msw';
+import React from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+// Helper to create a fresh QueryClient for each test and a wrapper
+const createTestQueryClient = () =>
+  new QueryClient({
+    defaultOptions: {
+      queries: { retry: false, gcTime: 0, staleTime: 0 },
+      mutations: { retry: false },
+    },
+  });
+
+const createWrapper = () => {
+  const queryClient = createTestQueryClient();
+  const Wrapper: React.FC<{ children?: React.ReactNode }> = ({ children }) =>
+    React.createElement(QueryClientProvider, { client: queryClient }, children);
+
+  return Wrapper;
+};
 
 describe('useQuestionSets', () => {
   it('should have initial state with loading=true', () => {
-    const { result } = renderHook(() => useQuestionSets());
+    const wrapper = createWrapper();
+    const { result } = renderHook(() => useQuestionSets(), { wrapper });
 
     expect(result.current.loading).toBe(true);
     expect(result.current.questionSets).toEqual([]);
@@ -13,7 +33,8 @@ describe('useQuestionSets', () => {
   });
 
   it('should fetch and set question sets data on mount', async () => {
-    const { result } = renderHook(() => useQuestionSets());
+    const wrapper = createWrapper();
+    const { result } = renderHook(() => useQuestionSets(), { wrapper });
 
     // Wait for the data to be fetched
     await waitFor(() => {
@@ -38,7 +59,8 @@ describe('useQuestionSets', () => {
       })
     );
 
-    const { result } = renderHook(() => useQuestionSets());
+    const wrapper = createWrapper();
+    const { result } = renderHook(() => useQuestionSets(), { wrapper });
 
     await waitFor(() => {
       expect(result.current.loading).toBe(false);
@@ -57,7 +79,8 @@ describe('useQuestionSets', () => {
       })
     );
 
-    const { result } = renderHook(() => useQuestionSets());
+    const wrapper = createWrapper();
+    const { result } = renderHook(() => useQuestionSets(), { wrapper });
 
     await waitFor(() => {
       expect(result.current.loading).toBe(false);
@@ -68,7 +91,8 @@ describe('useQuestionSets', () => {
   });
 
   it('should refetch data when refetch is called', async () => {
-    const { result } = renderHook(() => useQuestionSets());
+    const wrapper = createWrapper();
+    const { result } = renderHook(() => useQuestionSets(), { wrapper });
 
     // Wait for initial fetch
     await waitFor(() => {
@@ -113,12 +137,17 @@ describe('useQuestionSets', () => {
   });
 
   it('should handle refetch with error', async () => {
-    const { result } = renderHook(() => useQuestionSets());
+    const wrapper = createWrapper();
+    const { result } = renderHook(() => useQuestionSets(), { wrapper });
 
     // Wait for initial fetch
     await waitFor(() => {
       expect(result.current.loading).toBe(false);
     });
+
+    // Store the initial successful data
+    const initialData = result.current.questionSets;
+    expect(initialData).toHaveLength(2);
 
     // Override the handler to return an error for refetch
     server.use(
@@ -134,10 +163,12 @@ describe('useQuestionSets', () => {
     await result.current.refetch();
 
     await waitFor(() => {
-      expect(result.current.loading).toBe(false);
+      expect(result.current.error).toBeTruthy();
     });
 
-    expect(result.current.questionSets).toEqual([]);
+    // TanStack Query keeps previous data on error (due to placeholderData)
+    // This is expected behavior to prevent UI flicker
+    expect(result.current.questionSets).toEqual(initialData);
     expect(result.current.error).toBeTruthy();
     expect(result.current.error?.message).toContain('Failed to fetch question sets');
   });

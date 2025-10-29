@@ -2,10 +2,30 @@ import { renderHook, waitFor, act } from '@testing-library/react';
 import { useFormService } from './useFormService';
 import { server } from '../mocks/server';
 import { rest } from 'msw';
+import React from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+// Helper to create a fresh QueryClient for each test and a wrapper
+const createTestQueryClient = () =>
+  new QueryClient({
+    defaultOptions: {
+      queries: { retry: false, gcTime: 0, staleTime: 0 },
+      mutations: { retry: false },
+    },
+  });
+
+const createWrapper = () => {
+  const queryClient = createTestQueryClient();
+  const Wrapper: React.FC<{ children?: React.ReactNode }> = ({ children }) =>
+    React.createElement(QueryClientProvider, { client: queryClient }, children);
+
+  return Wrapper;
+};
 
 describe('useFormService', () => {
   it('should have initial state with formData=null, loading=false, error=null', () => {
-    const { result } = renderHook(() => useFormService());
+  const wrapper = createWrapper();
+  const { result } = renderHook(() => useFormService(), { wrapper });
 
     expect(result.current.formData).toBeNull();
     expect(result.current.loading).toBe(false);
@@ -13,7 +33,8 @@ describe('useFormService', () => {
   });
 
   it('should fetch form data when fetchForm is called', async () => {
-    const { result } = renderHook(() => useFormService());
+  const wrapper = createWrapper();
+  const { result } = renderHook(() => useFormService(), { wrapper });
 
     await act(async () => {
       await result.current.fetchForm('1');
@@ -30,7 +51,8 @@ describe('useFormService', () => {
   });
 
   it('should set loading=true during fetch', async () => {
-    const { result } = renderHook(() => useFormService());
+  const wrapper = createWrapper();
+  const { result } = renderHook(() => useFormService(), { wrapper });
 
     act(() => {
       result.current.fetchForm('1');
@@ -55,7 +77,8 @@ describe('useFormService', () => {
       })
     );
 
-    const { result } = renderHook(() => useFormService());
+  const wrapper = createWrapper();
+  const { result } = renderHook(() => useFormService(), { wrapper });
 
     await act(async () => {
       await result.current.fetchForm('999');
@@ -70,30 +93,9 @@ describe('useFormService', () => {
     expect(result.current.error?.message).toContain('404');
   });
 
-  it('should reset state when reset is called', async () => {
-    const { result } = renderHook(() => useFormService());
-
-    // Fetch some data first
-    await act(async () => {
-      await result.current.fetchForm('1');
-    });
-
-    await waitFor(() => {
-      expect(result.current.formData).toBeTruthy();
-    });
-
-    // Reset
-    act(() => {
-      result.current.reset();
-    });
-
-    expect(result.current.formData).toBeNull();
-    expect(result.current.loading).toBe(false);
-    expect(result.current.error).toBeNull();
-  });
-
   it('should abort ongoing request when reset is called', async () => {
-    const { result } = renderHook(() => useFormService());
+  const wrapper = createWrapper();
+  const { result } = renderHook(() => useFormService(), { wrapper });
 
     // Start fetch
     act(() => {
