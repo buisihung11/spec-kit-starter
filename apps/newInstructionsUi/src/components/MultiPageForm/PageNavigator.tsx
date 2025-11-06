@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Box, Button, Stack } from '@spec-kit-demo-v2/design-system';
+import { Box, Button } from '@spec-kit-demo-v2/design-system';
 
 /**
  * Props for the PageNavigator component
@@ -120,29 +120,27 @@ export function PageNavigator({
         Previous
       </Button>
 
-      <Stack direction="row" spacing={2}>
-        {!isLastStep ? (
+      {!isLastStep ? (
+        <Button
+          variant="contained"
+          onClick={onNext}
+          disabled={disabled}
+          aria-label="Next page"
+        >
+          Next
+        </Button>
+      ) : (
+        onSubmit && (
           <Button
             variant="contained"
-            onClick={onNext}
+            onClick={onSubmit}
             disabled={disabled}
-            aria-label="Next page"
+            aria-label="Submit form"
           >
-            Next
+            Submit
           </Button>
-        ) : (
-          onSubmit && (
-            <Button
-              variant="contained"
-              onClick={onSubmit}
-              disabled={disabled}
-              aria-label="Submit form"
-            >
-              Submit
-            </Button>
-          )
-        )}
-      </Stack>
+        )
+      )}
     </Box>
   );
 }
