@@ -91,11 +91,11 @@ export function PageNavigator({
     };
 
     // Add event listener
-    window.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('keydown', handleKeyDown);
 
     // Cleanup on unmount
     return () => {
-      window.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('keydown', handleKeyDown);
     };
   }, [isFirstStep, isLastStep, onPrevious, onNext, disabled]);
 
@@ -111,16 +111,14 @@ export function PageNavigator({
         borderColor: 'divider',
       }}
     >
-      <Stack direction="row" spacing={2}>
-        <Button
-          variant="outlined"
-          onClick={onPrevious}
-          disabled={isFirstStep || disabled}
-          aria-label="Previous page"
-        >
-          Previous
-        </Button>
-      </Stack>
+      <Button
+        variant="outlined"
+        onClick={onPrevious}
+        disabled={isFirstStep || disabled}
+        aria-label="Previous page"
+      >
+        Previous
+      </Button>
 
       <Stack direction="row" spacing={2}>
         {!isLastStep ? (

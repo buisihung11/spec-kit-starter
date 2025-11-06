@@ -167,7 +167,7 @@ describe('PageNavigator', () => {
         />
       );
 
-      fireEvent.keyDown(window, { key: 'ArrowLeft', altKey: true });
+      fireEvent.keyDown(document, { key: 'ArrowLeft', altKey: true });
 
       expect(mockOnPrevious).toHaveBeenCalledTimes(1);
     });
@@ -182,7 +182,7 @@ describe('PageNavigator', () => {
         />
       );
 
-      fireEvent.keyDown(window, { key: 'ArrowLeft', altKey: true });
+      fireEvent.keyDown(document, { key: 'ArrowLeft', altKey: true });
 
       expect(mockOnPrevious).not.toHaveBeenCalled();
     });
@@ -197,7 +197,7 @@ describe('PageNavigator', () => {
         />
       );
 
-      fireEvent.keyDown(window, { key: 'ArrowRight', altKey: true });
+      fireEvent.keyDown(document, { key: 'ArrowRight', altKey: true });
 
       expect(mockOnNext).toHaveBeenCalledTimes(1);
     });
@@ -212,7 +212,7 @@ describe('PageNavigator', () => {
         />
       );
 
-      fireEvent.keyDown(window, { key: 'ArrowRight', altKey: true });
+      fireEvent.keyDown(document, { key: 'ArrowRight', altKey: true });
 
       expect(mockOnNext).not.toHaveBeenCalled();
     });
@@ -227,8 +227,8 @@ describe('PageNavigator', () => {
         />
       );
 
-      fireEvent.keyDown(window, { key: 'ArrowLeft', altKey: false });
-      fireEvent.keyDown(window, { key: 'ArrowRight', altKey: false });
+      fireEvent.keyDown(document, { key: 'ArrowLeft', altKey: false });
+      fireEvent.keyDown(document, { key: 'ArrowRight', altKey: false });
 
       expect(mockOnPrevious).not.toHaveBeenCalled();
       expect(mockOnNext).not.toHaveBeenCalled();
@@ -245,8 +245,8 @@ describe('PageNavigator', () => {
         />
       );
 
-      fireEvent.keyDown(window, { key: 'ArrowLeft', altKey: true });
-      fireEvent.keyDown(window, { key: 'ArrowRight', altKey: true });
+      fireEvent.keyDown(document, { key: 'ArrowLeft', altKey: true });
+      fireEvent.keyDown(document, { key: 'ArrowRight', altKey: true });
 
       expect(mockOnPrevious).not.toHaveBeenCalled();
       expect(mockOnNext).not.toHaveBeenCalled();
@@ -269,7 +269,7 @@ describe('PageNavigator', () => {
       });
       const preventDefaultSpy = jest.spyOn(leftEvent, 'preventDefault');
 
-      window.dispatchEvent(leftEvent);
+      document.dispatchEvent(leftEvent);
 
       expect(preventDefaultSpy).toHaveBeenCalled();
     });
@@ -277,7 +277,7 @@ describe('PageNavigator', () => {
 
   describe('Event listener cleanup', () => {
     it('should cleanup event listeners on unmount', () => {
-      const removeEventListenerSpy = jest.spyOn(window, 'removeEventListener');
+      const removeEventListenerSpy = jest.spyOn(document, 'removeEventListener');
 
       const { unmount } = render(
         <PageNavigator
